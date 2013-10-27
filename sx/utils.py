@@ -11,6 +11,12 @@ __author__ = 'pussbb'
 
 import os
 
+import sys
+if sys.version_info[0] < 3:
+    import imp
+    imp.reload(sys)
+    sys.setdefaultencoding("UTF-8")
+
 
 from sx.exceptions import ScalixExternalCommandFailed
 import subprocess
