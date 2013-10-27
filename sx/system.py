@@ -137,7 +137,8 @@ class System(object):
             try:
                 return int(result[1])
             except (UnicodeEncodeError, ValueError) as exception:
-                logger.critical("Could not get partition size", result)
+                logger.critical("Could not get partition size", exception,
+                                result)
                 return -1
         except ScalixExternalCommandFailed, exception:
             logger.critical("Could not get partition size", exception)
