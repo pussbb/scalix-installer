@@ -14,7 +14,7 @@ import time
 
 import sx.utils as utils
 
-__all__ = ["LOGGER", "info", "warning", "debug", "critical"]
+__all__ = ["LOGGER", "info", "warning", "error", "critical"]
 
 #{filename}.{tm_year}-{tm_mon}-{tm_mday}.{tm_hour}-{tm_min}-{tm_sec}.log
 LOG_FILENAME_FORMAT = "{filename}.{0}-{1}-{2}.{3}-{4}-{5}.log"
@@ -25,21 +25,21 @@ DEBUG = False
 def create_logger(name, debug=False, filename='scalix-installer',
                  directory=None):
 
-        logger = logging.getLogger(name)
-        if debug:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.INFO)
-        if not filename:
-            filename = name
-        filename = LOG_FILENAME_FORMAT\
-            .format(filename=filename,*time.localtime(time.time()))
-        filename = utils.absolute_file_path(filename, directory, True)
-        handler = logging.FileHandler(filename)
-        formatter = logging.Formatter(LOG_FORMATTER_FORMAT)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        return logger
+    logger = logging.getLogger(name)
+    if debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+    if not filename:
+        filename = name
+    filename = LOG_FILENAME_FORMAT\
+        .format(filename=filename,*time.localtime(time.time()))
+    filename = utils.absolute_file_path(filename, directory, True)
+    handler = logging.FileHandler(filename)
+    formatter = logging.Formatter(LOG_FORMATTER_FORMAT)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger
 
 
 def logger_wrapper(func):

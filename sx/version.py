@@ -14,7 +14,7 @@ def version_file():
     return absolute_file_path('version.properties')
 
 def version_properties():
-     return properties_from_file(version_file())
+    return properties_from_file(version_file())
 
 def get_version():
     properties = properties_from_file(version_file(), replace_dots=True)

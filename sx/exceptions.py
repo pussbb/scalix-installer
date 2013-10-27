@@ -30,12 +30,6 @@ class ScalixProcessingException(ScalixException):
     """
     pass
 
-class ScalixCommandNotFoundException(ScalixException):
-    """An CommandNotFound exception so we can trap it
-
-    """
-    def __init__(self, command):
-        self.message = "Command not found {0}".format(command)
 
 class ScalixExternalCommandFailed(Exception):
     """

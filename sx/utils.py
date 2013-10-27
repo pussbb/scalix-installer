@@ -62,7 +62,7 @@ def properties_from_file(filename, replace_dots=False):
     return properties
 
 
-def execute(*args):
+def execute(*args, **kwargs):
 
     """
     Execute an external command and make sure it succeeded. Raises
@@ -82,16 +82,20 @@ def execute(*args):
     ]
 
     for item in args[1:]:
-        command.append(item)#pipe.qoute(item)
+        if kwargs.get('escape', False):
+            item = pipes.quote(item)
+        command.append(item)
+
     command.append(';')
 
-    shell = subprocess.Popen(" ".join(command),close_fds=True,
-                              stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               stdin=None,
-                               executable='/bin/bash',
-                               shell=True,
-                               universal_newlines=True)
+    shell = subprocess.Popen(" ".join(command),
+                             close_fds=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdin=None,
+                             executable='/bin/bash',
+                             shell=True,
+                             universal_newlines=True)
 
     stdout, stderr = shell.communicate()
 

@@ -34,23 +34,32 @@ Supported platforms item's descripton
     'x86_64', #platfrom architecture 32bit's or 64 bit's
     'rhel6' # packages release abbreviation
 )
+
 """
 SUPPORTED_PLATFORMS = (
     ('CentOS', '6', 'Final', 'x86_64', 'rhel6'),
     ('CentOS', '6', 'Final', 'x86', 'rhel6'),
     ('Ubuntu', '13.10', 'saucy', 'x86_64', '???'),
 )
+
 class System(object):
 
     def __init__(self):
         self.platform = sys.platform
+        self.machine = None
+        self.system = None
+        self.node = None
+        self.release = None
+        self.version = None
+        self.processor = None
 
         uname_data = platform.uname()
         for index, elem in enumerate(UNAME_KEYS):
             setattr(self, elem, uname_data[index])
 
         if self.is_linux():
-            self.__determine_linux_platform()
+            self.distro, self.distro_version, self.distro_abbr = \
+            platform.linux_distribution()
 
     def __repr__(self):
         result = "System: {system}\nRelease: {release}\n" \
@@ -58,13 +67,9 @@ class System(object):
                "Proccessor: {processor}".format(**self.__dict__)
         if self.is_linux():
             result = "{result}\nDistribution:{distro}" \
-                     " {distro_version} ({distro_abr})"\
+                     " {distro_version} ({distro_abbr})"\
                 .format(result=result,**self.__dict__)
         return result
-
-    def __determine_linux_platform(self):
-        self.distro, self.distro_version, self.distro_abr = \
-            platform.linux_distribution()
 
     def is_linux(self):
         return self.platform.startswith('linux')
@@ -80,12 +85,12 @@ class System(object):
         if self.is_linux():
             current_platform = (self.distro, self.distro_version, self.machine)
 
-        for platform in SUPPORTED_PLATFORMS:
-            if current_platform[0] != platform[0]:
+        for supported_platform in SUPPORTED_PLATFORMS:
+            if current_platform[0] != supported_platform[0]:
                 continue
-            if not current_platform[1].startswith(platform[1]):
+            if not current_platform[1].startswith(supported_platform[1]):
                 continue
-            if current_platform[2] != platform[3]:
+            if current_platform[2] != supported_platform[3]:
                 continue
             return True
 
@@ -96,28 +101,28 @@ class System(object):
         try:
             result = execute("runlevel", "|","gawk '{print $2}'")
             return int(result[0])
-        except ScalixExternalCommandFailed,e:
-            logger.critical("Could not get run level", e)
+        except ScalixExternalCommandFailed, exception:
+            logger.critical("Could not get run level", exception)
             return -1
 
     @staticmethod
     def memory_total():
         try:
             #gawk '/MemTotal/ { print $2 }' /proc/meminfo
-            return int(execute("gawk","'/MemTotal/ { print $2 }'",
+            return int(execute("gawk", "'/MemTotal/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommandFailed,e:
-            logger.critical("Could not get total memory", e)
+        except ScalixExternalCommandFailed, exception:
+            logger.critical("Could not get total memory", exception)
             return -1
 
     @staticmethod
     def memory_free():
         try:
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
-            return int(execute("gawk","'/MemFree/ { print $2 }'",
+            return int(execute("gawk", "'/MemFree/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommandFailed,e:
-            logger.critical("Could not get free memory", e)
+        except ScalixExternalCommandFailed, exception:
+            logger.critical("Could not get free memory", exception)
             return -1
 
     @staticmethod
@@ -131,11 +136,11 @@ class System(object):
             result = execute("df", "-lP", folder, "|", "gawk '{print $4}'")
             try:
                 return int(result[1])
-            except (UnicodeEncodeError, ValueError) as e:
+            except (UnicodeEncodeError, ValueError) as exception:
                 logger.critical("Could not get partition size", result)
                 return -1
-        except ScalixExternalCommandFailed,e:
-            logger.critical("Could not get partition size", e)
+        except ScalixExternalCommandFailed, exception:
+            logger.critical("Could not get partition size", exception)
             return -1
 
     @staticmethod
@@ -150,7 +155,7 @@ class System(object):
     @staticmethod
     def open_url(url):
         try:
-            return webbrowser.open(url, 1)
-        except webbrowser.Error, e:
-            logger.critical("Couldn't open brouser", e, " url ", url)
+            return webbrowser.open(url, new=1)
+        except webbrowser.Error, exception:
+            logger.critical("Couldn't open brouser", exception, " url ", url)
             return False
