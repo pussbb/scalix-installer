@@ -17,10 +17,11 @@ if sys.version_info[0] < 3:
     imp.reload(sys)
     sys.setdefaultencoding("UTF-8")
 
-
-from sx.exceptions import ScalixExternalCommandFailed
 import subprocess
 import pipes
+
+from sx.exceptions import ScalixExternalCommandFailed
+import sx.logger as logger
 
 def current_directory():
     return os.path.dirname(os.path.realpath(__file__))
@@ -88,6 +89,8 @@ def execute(*args, **kwargs):
 
     command.append(';')
 
+    logger.debug("Executing cmd: "," ".join(command))
+
     shell = subprocess.Popen(" ".join(command),
                              close_fds=True,
                              stdout=subprocess.PIPE,
@@ -103,6 +106,7 @@ def execute(*args, **kwargs):
         message = "External command failed with exit code {code}!" \
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=shell.returncode,msg=stderr)
+        logger.debug("Executing cmd failed: ", message)
         raise ScalixExternalCommandFailed, message
     result = stdout or stderr
     return result.strip().split('\n')

@@ -40,6 +40,16 @@ def main(args):
                 output=True)
 
     s = System()
+    #get_java_version determine_interface
+    print(System.determine_interface(System.determine_ip()))
+    print(System.determine_ip())
+    print(System.get_java_version())
+    print(System.is_ibm_j2sdk())
+    print(System.get_mx_records('allwebsuite.com'))
+    print(System.get_ips())
+    print(System.get_FQDN())
+    print(System.is_FQDN())
+    print(System.listening_port(80))
     print("supported", s.is_supported())
     print("run level", System.run_level())
     print("Memory (total, free)", System.memory())

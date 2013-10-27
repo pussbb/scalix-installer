@@ -8,16 +8,16 @@ from __future__ import print_function, unicode_literals, with_statement, \
 __author__ = 'pussbb'
 
 
-from sx.utils import properties_from_file, absolute_file_path
+import sx.utils as utils
 
 def version_file():
-    return absolute_file_path('version.properties')
+    return utils.absolute_file_path('version.properties')
 
 def version_properties():
-    return properties_from_file(version_file())
+    return utils.properties_from_file(version_file())
 
 def get_version():
-    properties = properties_from_file(version_file(), replace_dots=True)
+    properties = utils.properties_from_file(version_file(), replace_dots=True)
     return '{version_major}.{version_minor}.{version_patch}.{build_number}'\
         .format(**properties)
 

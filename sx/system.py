@@ -12,6 +12,8 @@ __author__ = 'pussbb'
 import platform
 import sys
 import webbrowser
+import socket
+import re
 
 from sx.utils import execute
 from sx.exceptions import ScalixExternalCommandFailed
@@ -159,4 +161,98 @@ class System(object):
             return webbrowser.open(url, new=1)
         except webbrowser.Error, exception:
             logger.critical("Couldn't open brouser", exception, " url ", url)
+            return False
+
+    @staticmethod
+    def listening_port(port):
+        """
+
+        @param port: port number integer
+        @return: on success list which contain
+        (Proto, Recv-Q, Send-Q, Local Address, Foreign Address, State)
+        or False
+        """
+
+        try:
+            result = execute("netstat", "-ln", "|", "grep",
+                             ":{0:d}[^0-9]".format(port))
+            return result[0].strip().split()
+        except ScalixExternalCommandFailed, exception:
+            logger.warning("Could not get port is listening ", exception)
+            return False
+
+    @staticmethod
+    def get_FQDN():
+        return socket.getfqdn()
+
+    @staticmethod
+    def is_FQDN():
+        pattern = r'^[a-zA-Z0-9\-\.]+\.([0-9a-zA-Z]+)$'
+        return re.match(pattern, System.get_FQDN()) != None
+
+    @staticmethod
+    def get_ips():
+        #print(socket.gethostbyname(socket.gethostname()))
+        try:
+            lines = execute("ip", "address", "|", "grep",
+                             "[[:space:]]inet[[:space:]]")
+            pattern = r"inet\s(\d{1,3}[^127|^192]\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+            result = []
+            for line in lines:
+                match = re.match(pattern, line.strip())
+                if match:
+                    result.append(match.group(1))
+            return result
+
+        except ScalixExternalCommandFailed, exception:
+            logger.warning("Could not get ips ", exception)
+            return False
+
+    @staticmethod
+    def get_mx_records(domain):
+        try:
+            lines = execute("dig", "-t", "MX", "+short", domain)
+            return [i.strip() for i in lines]
+        except ScalixExternalCommandFailed, exception:
+            logger.warning("Could not get MX records ", exception)
+            return False
+
+    @staticmethod
+    def get_java_version(raw=False):
+        try:
+            lines = execute("java", "-version")
+            if raw or not lines:
+                return lines
+            version = re.search(r'^java version "(.*)"$', lines[0].strip())
+            if version:
+                return version.group(0)
+        except ScalixExternalCommandFailed, exception:
+            logger.warning("Could not get java version", exception)
+            return False
+
+    @staticmethod
+    def is_ibm_j2sdk():
+        result = re.search(r'IBM\s(\w+)\sVM',
+                           '\n'.join(System.get_java_version(raw=True) or []),
+                           re.I | re.M)
+        return result != None
+
+    @staticmethod
+    def determine_ip():
+        ip_list = socket.gethostbyaddr(System.get_FQDN())[2]
+        if ip_list:
+            return ip_list[0]
+        return '127.0.1.1'
+
+    @staticmethod
+    def determine_interface(ip):
+
+        try:
+            lines = execute("ip", "addr", "show", "|", "grep",
+                            "[[:space:]]inet[[:space:]]{}/".format(ip),
+                            "|", "head", "-1", "|", "gawk", "'{ print $NF }'")
+            if lines:
+                return lines[0].strip()
+        except ScalixExternalCommandFailed, exception:
+            logger.warning("Could not determine interface", exception)
             return False

@@ -12,9 +12,10 @@ __author__ = 'pussbb'
 import logging
 import time
 
-import sx.utils as utils
+import sx.utils
 
-__all__ = ["LOGGER", "info", "warning", "error", "critical"]
+__all__ = ["LOGGER", "info", "warning", "error", "critical", "debug",
+           "is_debug"]
 
 #{filename}.{tm_year}-{tm_mon}-{tm_mday}.{tm_hour}-{tm_min}-{tm_sec}.log
 LOG_FILENAME_FORMAT = "{filename}.{0}-{1}-{2}.{3}-{4}-{5}.log"
@@ -34,21 +35,28 @@ def create_logger(name, debug=False, filename='scalix-installer',
         filename = name
     filename = LOG_FILENAME_FORMAT\
         .format(filename=filename,*time.localtime(time.time()))
-    filename = utils.absolute_file_path(filename, directory, True)
+    filename = sx.utils.absolute_file_path(filename, directory, True)
     handler = logging.FileHandler(filename)
     formatter = logging.Formatter(LOG_FORMATTER_FORMAT)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
 
+def is_debug():
+    return LOGGER.isEnabledFor(logging.DEBUG)
 
 def logger_wrapper(func):
     def real_wrapper(*args, **kwargs):
-        if LOGGER.isEnabledFor(logging.DEBUG) or kwargs.get('output', False):
+        if is_debug() or kwargs.get('output', False):
             print(*args)
         return func(''.join([str(i) for i in args]).strip())
     return real_wrapper
 
+@logger_wrapper
+def debug(message):
+    if not is_debug():
+        return
+    LOGGER.info(message)
 
 @logger_wrapper
 def info(message):
