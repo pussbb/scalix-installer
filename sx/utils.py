@@ -107,7 +107,7 @@ def execute(*args, **kwargs):
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=shell.returncode,msg=stderr)
         logger.debug("Executing cmd failed: ", message)
-        raise ScalixExternalCommandFailed, message
+        raise ScalixExternalCommandFailed(message)
     result = stdout or stderr
     return result.strip().split('\n')
 

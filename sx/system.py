@@ -103,7 +103,7 @@ class System(object):
         try:
             result = execute("runlevel", "|","gawk '{print $2}'")
             return int(result[0])
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get run level", exception)
             return -1
 
@@ -113,7 +113,7 @@ class System(object):
             #gawk '/MemTotal/ { print $2 }' /proc/meminfo
             return int(execute("gawk", "'/MemTotal/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get total memory", exception)
             return -1
 
@@ -123,7 +123,7 @@ class System(object):
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
             return int(execute("gawk", "'/MemFree/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get free memory", exception)
             return -1
 
@@ -142,7 +142,7 @@ class System(object):
                 logger.critical("Could not get partition size", exception,
                                 result)
                 return -1
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get partition size", exception)
             return -1
 
@@ -159,7 +159,7 @@ class System(object):
     def open_url(url):
         try:
             return webbrowser.open(url, new=1)
-        except webbrowser.Error, exception:
+        except webbrowser.Error as exception:
             logger.critical("Couldn't open brouser", exception, " url ", url)
             return False
 
@@ -177,7 +177,7 @@ class System(object):
             result = execute("netstat", "-ln", "|", "grep",
                              ":{0:d}[^0-9]".format(port))
             return result[0].strip().split()
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get port is listening ", exception)
             return False
 
@@ -204,7 +204,7 @@ class System(object):
                     result.append(match.group(1))
             return result
 
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get ips ", exception)
             return False
 
@@ -213,7 +213,7 @@ class System(object):
         try:
             lines = execute("dig", "-t", "MX", "+short", domain)
             return [i.strip() for i in lines]
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get MX records ", exception)
             return False
 
@@ -226,7 +226,7 @@ class System(object):
             version = re.search(r'^java version "(.*)"$', lines[0].strip())
             if version:
                 return version.group(0)
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get java version", exception)
             return False
 
@@ -249,10 +249,10 @@ class System(object):
 
         try:
             lines = execute("ip", "addr", "show", "|", "grep",
-                            "[[:space:]]inet[[:space:]]{}/".format(ip),
+                            "[[:space:]]inet[[:space:]]{0}/".format(ip),
                             "|", "head", "-1", "|", "gawk", "'{ print $NF }'")
             if lines:
                 return lines[0].strip()
-        except ScalixExternalCommandFailed, exception:
+        except ScalixExternalCommandFailed as exception:
             logger.warning("Could not determine interface", exception)
             return False
