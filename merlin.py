@@ -40,6 +40,11 @@ def main(args):
                 output=True)
 
     s = System()
+    print("supported", s.is_supported())
+    print("run level", System.run_level())
+    print("Memory (total, free)", System.memory())
+    print(System.disk_space('/', '/opt', '/data'))
+    #print(System.open_url('http://python.org/'))
 
     logger.info('Running on:\n', s, output=True)
 

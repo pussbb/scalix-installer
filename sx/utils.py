@@ -76,7 +76,7 @@ def execute(*args):
     ]
 
     for item in args[1:]:
-        command.append(pipes.quote(item))
+        command.append(item)#pipe.qoute(item)
     command.append(';')
 
     shell = subprocess.Popen(" ".join(command),close_fds=True,
