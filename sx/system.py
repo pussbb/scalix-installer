@@ -128,7 +128,7 @@ class System(object):
     def partition_size(folder):
         try:
             #"df -lP %s | gawk '{print $4}'"
-            result = execute("df", "-lp", folder, "|", "gawk '{print $4}'")
+            result = execute("df", "-lP", folder, "|", "gawk '{print $4}'")
             try:
                 return int(result[1])
             except (UnicodeEncodeError, ValueError) as e:
