@@ -40,6 +40,8 @@ def main(args):
                 output=True)
 
     s = System()
+    print(System.command_exists('wipe'))
+    #return
     #get_java_version determine_interface
     print(System.determine_interface(System.determine_ip()))
     print(System.determine_ip())
@@ -49,11 +51,11 @@ def main(args):
     print(System.get_ips())
     print(System.get_FQDN())
     print(System.is_FQDN())
-    print(System.listening_port(80))
+    print(*System.listening_port(80))
     print("supported", s.is_supported())
     print("run level", System.run_level())
     print("Memory (total, free)", System.memory())
-    print(System.disk_space('/', '/opt', '/data'))
+    print(System.disk_space('/', '/opt'))
     #print(System.open_url('http://python.org/'))
 
     logger.info('Running on:\n', s, output=True)

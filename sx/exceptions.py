@@ -8,10 +8,11 @@ from __future__ import unicode_literals
 
 __author__ = 'pussbb'
 
-
 class ScalixException(Exception):
     """ Base Exception"""
-    pass
+
+    def __repr__(self):
+        return "{0}: {1}".format(self.__class__.__name__, repr(self.__dict__))
 
 class ScalixLicenseError(ScalixException):
     """An exception type used to indicate a problem reading,
@@ -30,8 +31,16 @@ class ScalixProcessingException(ScalixException):
     pass
 
 
-class ScalixExternalCommandFailed(Exception):
+class ScalixExternalCommandFailed(ScalixException):
     """
     Raised by :py:func:`execute()` when an external command returns with a
     nonzero exit code.
     """
+
+    def __init__(self, message, stdout=None, stderr=None):
+        super(self.__class__, self).__init__()
+        self.message = message
+        self.stdout = stdout
+        self.stderr = stderr
+
+

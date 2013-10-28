@@ -47,9 +47,18 @@ def is_debug():
 
 def logger_wrapper(func):
     def real_wrapper(*args, **kwargs):
+        list = []
+        debug_mode = is_debug()
+        for item in args:
+            if isinstance(item, object) and debug_mode:
+                item = repr(item)
+            else:
+                item = str(item)
+            list.append(item)
+
         if is_debug() or kwargs.get('output', False):
-            print(*args)
-        return func(''.join([str(i) for i in args]).strip())
+            print(list)
+        return func(' '.join(list).strip())
     return real_wrapper
 
 @logger_wrapper

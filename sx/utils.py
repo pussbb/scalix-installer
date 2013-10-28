@@ -62,6 +62,20 @@ def properties_from_file(filename, replace_dots=False):
         properties[name] = value
     return properties
 
+BASH_CONDITIONS = (
+    "|",
+    "||",
+    "&&",
+    "&",
+    ";",
+    "$",
+    "2>&1",
+)
+
+def bash_command(command):
+    if command.startswith("$(type"):
+        return command
+    return "$(type -P {cmd})".format(cmd=command)
 
 def execute(*args, **kwargs):
 
@@ -75,15 +89,16 @@ def execute(*args, **kwargs):
     """
 
     # got one argument - list
-    if len(args) == 1:
+    if len(args) == 1 and not isinstance(args[0], basestring):
         args = args[0]
 
-    command = [
-        "$(type -P {cmd})".format(cmd=args[0])
-    ]
+    command = [bash_command(args[0])]
 
     for item in args[1:]:
-        if kwargs.get('escape', False):
+        if not item:
+            continue
+        if item[0] not in ["'", "\"", "$"] and \
+            item not in BASH_CONDITIONS :
             item = pipes.quote(item)
         command.append(item)
 
@@ -107,7 +122,8 @@ def execute(*args, **kwargs):
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=shell.returncode,msg=stderr)
         logger.debug("Executing cmd failed: ", message)
-        raise ScalixExternalCommandFailed(message)
+        raise ScalixExternalCommandFailed(message, stdout, stderr)
+
     result = stdout or stderr
     return result.strip().split('\n')
 

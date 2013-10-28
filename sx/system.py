@@ -15,7 +15,7 @@ import webbrowser
 import socket
 import re
 
-from sx.utils import execute
+from sx import utils
 from sx.exceptions import ScalixExternalCommandFailed
 import sx.logger as logger
 
@@ -99,9 +99,19 @@ class System(object):
         return False
 
     @staticmethod
+    def command_exists(command):
+        try:
+            utils.execute(command)
+            return True
+        except ScalixExternalCommandFailed as exception:
+            logger.critical("Could not command not found ", command, exception)
+            return False
+
+    @staticmethod
     def run_level():
         try:
-            result = execute("runlevel", "|","gawk '{print $2}'")
+            result = utils.execute("runlevel", "|", utils.bash_command("gawk"),
+                                   "'{print $2}'")
             return int(result[0])
         except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get run level", exception)
@@ -111,7 +121,7 @@ class System(object):
     def memory_total():
         try:
             #gawk '/MemTotal/ { print $2 }' /proc/meminfo
-            return int(execute("gawk", "'/MemTotal/ { print $2 }'",
+            return int(utils.execute("gawk", "'/MemTotal/ { print $2 }'",
                                "/proc/meminfo")[0])
         except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get total memory", exception)
@@ -121,7 +131,7 @@ class System(object):
     def memory_free():
         try:
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
-            return int(execute("gawk", "'/MemFree/ { print $2 }'",
+            return int(utils.execute("gawk", "'/MemFree/ { print $2 }'",
                                "/proc/meminfo")[0])
         except ScalixExternalCommandFailed as exception:
             logger.critical("Could not get free memory", exception)
@@ -135,7 +145,8 @@ class System(object):
     def partition_size(folder):
         try:
             #"df -lP %s | gawk '{print $4}'"
-            result = execute("df", "-lP", folder, "|", "gawk '{print $4}'")
+            result = utils.execute("df", "-lP", folder, "|",
+                                   utils.bash_command("gawk"), "'{print $4}'")
             try:
                 return int(result[1])
             except (UnicodeEncodeError, ValueError) as exception:
@@ -160,7 +171,7 @@ class System(object):
         try:
             return webbrowser.open(url, new=1)
         except webbrowser.Error as exception:
-            logger.critical("Couldn't open brouser", exception, " url ", url)
+            logger.critical("Couldn't open browser", exception, " url ", url)
             return False
 
     @staticmethod
@@ -168,18 +179,20 @@ class System(object):
         """
 
         @param port: port number integer
-        @return: on success list which contain
+        @return: on success tulip which contain
         (Proto, Recv-Q, Send-Q, Local Address, Foreign Address, State)
         or False
         """
 
         try:
-            result = execute("netstat", "-ln", "|", "grep",
-                             ":{0:d}[^0-9]".format(port))
-            return result[0].strip().split()
+            result = utils.execute("netstat", "-ln", "|",
+                                   utils.bash_command("grep"),
+                                   ":{0:d}[^0-9]".format(port))
+            return (i for i in result[0].strip().split())
+
         except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get port is listening ", exception)
-            return False
+
 
     @staticmethod
     def get_FQDN():
@@ -194,8 +207,10 @@ class System(object):
     def get_ips():
         #print(socket.gethostbyname(socket.gethostname()))
         try:
-            lines = execute("ip", "address", "|", "grep",
-                             "[[:space:]]inet[[:space:]]")
+            lines = utils.execute("ip", "address", "|",
+                                  utils.bash_command("grep"),
+                                  "[[:space:]]inet[[:space:]]")
+
             pattern = r"inet\s(\d{1,3}[^127|^192]\.\d{1,3}\.\d{1,3}\.\d{1,3})"
             result = []
             for line in lines:
@@ -211,7 +226,7 @@ class System(object):
     @staticmethod
     def get_mx_records(domain):
         try:
-            lines = execute("dig", "-t", "MX", "+short", domain)
+            lines = utils.execute("dig", "-t", "MX", "+short", domain)
             return [i.strip() for i in lines]
         except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get MX records ", exception)
@@ -220,7 +235,7 @@ class System(object):
     @staticmethod
     def get_java_version(raw=False):
         try:
-            lines = execute("java", "-version")
+            lines = utils.execute("java", "-version")
             if raw or not lines:
                 return lines
             version = re.search(r'^java version "(.*)"$', lines[0].strip())
@@ -228,7 +243,6 @@ class System(object):
                 return version.group(0)
         except ScalixExternalCommandFailed as exception:
             logger.warning("Could not get java version", exception)
-            return False
 
     @staticmethod
     def is_ibm_j2sdk():
@@ -242,17 +256,20 @@ class System(object):
         ip_list = socket.gethostbyaddr(System.get_FQDN())[2]
         if ip_list:
             return ip_list[0]
-        return '127.0.1.1'
+        return '127.0.0.1'
 
     @staticmethod
     def determine_interface(ip):
 
         try:
-            lines = execute("ip", "addr", "show", "|", "grep",
-                            "[[:space:]]inet[[:space:]]{0}/".format(ip),
-                            "|", "head", "-1", "|", "gawk", "'{ print $NF }'")
+            lines = utils.execute("ip", "addr", "show", "|",
+                                  utils.bash_command("grep"),
+                                  "[[:space:]]inet[[:space:]]{0}/".format(ip),
+                                  "|", utils.bash_command("head"), "-1", "|",
+                                  utils.bash_command("gawk"), "'{ print $NF }'")
             if lines:
                 return lines[0].strip()
+
         except ScalixExternalCommandFailed as exception:
             logger.warning("Could not determine interface", exception)
             return False
