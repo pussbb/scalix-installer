@@ -16,7 +16,7 @@ import socket
 import re
 
 from sx import utils
-from sx.exceptions import ScalixExternalCommandFailed
+from sx.exceptions import ScalixExternalCommand, ScalixExternalCommandNotFound
 import sx.logger as logger
 
 UNAME_KEYS = [
@@ -67,10 +67,12 @@ class System(object):
         result = "System: {system}\nRelease: {release}\n" \
                "Version: {version}\nMachine: {machine}\n" \
                "Proccessor: {processor}".format(**self.__dict__)
+
         if self.is_linux():
             result = "{result}\nDistribution:{distro}" \
                      " {distro_version} ({distro_abbr})"\
                 .format(result=result,**self.__dict__)
+
         return result
 
     def is_linux(self):
@@ -101,10 +103,10 @@ class System(object):
     @staticmethod
     def command_exists(command):
         try:
-            utils.execute(command)
+            utils.execute(command, with_find=False)
             return True
-        except ScalixExternalCommandFailed as exception:
-            logger.critical("Could not command not found ", command, exception)
+        except ScalixExternalCommandNotFound as exception:
+            logger.warning("Command {0} not found ".format(command), exception)
             return False
 
     @staticmethod
@@ -113,7 +115,7 @@ class System(object):
             result = utils.execute("runlevel", "|", utils.bash_command("gawk"),
                                    "'{print $2}'")
             return int(result[0])
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.critical("Could not get run level", exception)
             return -1
 
@@ -123,7 +125,7 @@ class System(object):
             #gawk '/MemTotal/ { print $2 }' /proc/meminfo
             return int(utils.execute("gawk", "'/MemTotal/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.critical("Could not get total memory", exception)
             return -1
 
@@ -133,7 +135,7 @@ class System(object):
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
             return int(utils.execute("gawk", "'/MemFree/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.critical("Could not get free memory", exception)
             return -1
 
@@ -153,7 +155,7 @@ class System(object):
                 logger.critical("Could not get partition size", exception,
                                 result)
                 return -1
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.critical("Could not get partition size", exception)
             return -1
 
@@ -190,8 +192,9 @@ class System(object):
                                    ":{0:d}[^0-9]".format(port))
             return (i for i in result[0].strip().split())
 
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.warning("Could not get port is listening ", exception)
+        return ()
 
 
     @staticmethod
@@ -219,7 +222,7 @@ class System(object):
                     result.append(match.group(1))
             return result
 
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.warning("Could not get ips ", exception)
             return False
 
@@ -228,7 +231,7 @@ class System(object):
         try:
             lines = utils.execute("dig", "-t", "MX", "+short", domain)
             return [i.strip() for i in lines]
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.warning("Could not get MX records ", exception)
             return False
 
@@ -241,7 +244,7 @@ class System(object):
             version = re.search(r'^java version "(.*)"$', lines[0].strip())
             if version:
                 return version.group(0)
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.warning("Could not get java version", exception)
 
     @staticmethod
@@ -270,6 +273,6 @@ class System(object):
             if lines:
                 return lines[0].strip()
 
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommand as exception:
             logger.warning("Could not determine interface", exception)
             return False

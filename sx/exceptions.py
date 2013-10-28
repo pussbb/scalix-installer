@@ -30,17 +30,33 @@ class ScalixProcessingException(ScalixException):
     """
     pass
 
+class ScalixExternalCommand(ScalixException):
+    """Base exception class for executing external commands in shell
 
-class ScalixExternalCommandFailed(ScalixException):
+    """
+    def __init__(self, command, exit_code=1, stdout=None, stderr=None):
+        message = "External command failed with exit code {code}!" \
+                  " (command: {cmd})\n With message:\n {msg} \n"\
+            .format(cmd=command, code=exit_code, msg=stderr or stdout)
+
+        super(ScalixException, self).__init__(message)
+        self.command = command
+        self.stdout = stdout
+        self.stderr = stderr
+        self.exit_code = exit_code
+
+
+
+class ScalixExternalCommandNotFound(ScalixExternalCommand):
+    """Command not found
+
+    """
+    pass
+
+class ScalixExternalCommandFailed(ScalixExternalCommand):
     """
     Raised by :py:func:`execute()` when an external command returns with a
     nonzero exit code.
     """
 
-    def __init__(self, message, stdout=None, stderr=None):
-        super(self.__class__, self).__init__()
-        self.message = message
-        self.stdout = stdout
-        self.stderr = stderr
-
-
+    pass

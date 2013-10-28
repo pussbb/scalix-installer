@@ -17,10 +17,18 @@ if sys.version_info[0] < 3:
     imp.reload(sys)
     sys.setdefaultencoding("UTF-8")
 
+#basestring in python 3 not defined
+#try:
+#    unicode = unicode
+#except NameError:
+#    unicode = str
+#    basestring = (str, bytes)
+
 import subprocess
 import pipes
 
-from sx.exceptions import ScalixExternalCommandFailed
+from sx.exceptions import ScalixExternalCommandFailed, \
+    ScalixExternalCommandNotFound
 import sx.logger as logger
 
 def current_directory():
@@ -72,10 +80,14 @@ BASH_CONDITIONS = (
     "2>&1",
 )
 
-def bash_command(command):
-    if command.startswith("$(type"):
-        return command
-    return "$(type -P {cmd})".format(cmd=command)
+def bash_command(command, with_find=True):
+    result = command
+    if not command.startswith("$(") and not command.startswith("{"):
+        template = "$(type -P {0})"
+        if not with_find:
+            template = "{{{0}}}"
+        result = template.format(command)
+    return result
 
 def execute(*args, **kwargs):
 
@@ -89,10 +101,10 @@ def execute(*args, **kwargs):
     """
 
     # got one argument - list
-    if len(args) == 1 and not isinstance(args[0], basestring):
+    if len(args) == 1 and isinstance(args[0], list):
         args = args[0]
 
-    command = [bash_command(args[0])]
+    command = [bash_command(args[0], kwargs.get('with_find', True))]
 
     for item in args[1:]:
         if not item:
@@ -102,11 +114,12 @@ def execute(*args, **kwargs):
             item = pipes.quote(item)
         command.append(item)
 
-    command.append(';')
+    command.append('; $?')
 
-    logger.debug("Executing cmd: "," ".join(command))
+    command_string = " ".join(command)
+    logger.debug("Executing cmd: ", command_string)
 
-    shell = subprocess.Popen(" ".join(command),
+    shell = subprocess.Popen(command_string,
                              close_fds=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
@@ -117,12 +130,13 @@ def execute(*args, **kwargs):
 
     stdout, stderr = shell.communicate()
 
+    if shell.returncode == 127:
+        raise ScalixExternalCommandNotFound(command_string, shell.returncode,
+                                          stdout, stderr)
+
     if shell.returncode != 0:
-        message = "External command failed with exit code {code}!" \
-                  " (command: {cmd})\n With message:\n {msg} \n"\
-            .format(cmd=command, code=shell.returncode,msg=stderr)
-        logger.debug("Executing cmd failed: ", message)
-        raise ScalixExternalCommandFailed(message, stdout, stderr)
+        raise ScalixExternalCommandFailed(command_string, shell.returncode,
+                                          stdout, stderr)
 
     result = stdout or stderr
     return result.strip().split('\n')
