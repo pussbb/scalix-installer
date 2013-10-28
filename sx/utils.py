@@ -114,7 +114,7 @@ def execute(*args, **kwargs):
             item = pipes.quote(item)
         command.append(item)
 
-    command.append('; $?')
+    command.append(';')
 
     command_string = " ".join(command)
     logger.debug("Executing cmd: ", command_string)

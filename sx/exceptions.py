@@ -34,7 +34,7 @@ class ScalixExternalCommand(ScalixException):
     """Base exception class for executing external commands in shell
 
     """
-    def __init__(self, command, exit_code=1, stdout=None, stderr=None):
+    def __init__(self, command, exit_code, stdout, stderr):
         message = "External command failed with exit code {code}!" \
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=exit_code, msg=stderr or stdout)
