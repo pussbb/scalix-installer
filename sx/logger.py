@@ -57,7 +57,7 @@ def logger_wrapper(func):
             list.append(item)
 
         if is_debug() or kwargs.get('output', False):
-            print(list)
+            print(*list)
         return func(' '.join(list).strip())
     return real_wrapper
 

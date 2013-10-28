@@ -12,7 +12,7 @@ class ScalixException(Exception):
     """ Base Exception"""
 
     def __repr__(self):
-        return "{0}: {1}".format(self.__class__.__name__, repr(self.__dict__))
+        return u"{0}: {1}".format(self.__class__.__name__, unicode(self.__dict__).encode())
 
 class ScalixLicenseError(ScalixException):
     """An exception type used to indicate a problem reading,

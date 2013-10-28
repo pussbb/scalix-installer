@@ -139,6 +139,7 @@ def execute(*args, **kwargs):
                                           stdout, stderr)
 
     result = stdout or stderr
+
     return result.strip().split('\n')
 
 if __name__ == "__main__":

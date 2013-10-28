@@ -31,18 +31,22 @@ from sx.exceptions import ScalixException
 import sx.version as version
 import sx.logger as logger
 from sx.system import System
+from sx.package.manager import PackageManager
 
-def main(args):
+def test(args):
     logger.LOGGER = logger.create_logger('Merlin', directory=args['--logdir'],
                                          debug=args['--debug'])
 
     logger.info("Initializing Installer version", version.get_version(),
                 output=True)
-
     s = System()
+
+    pm = PackageManager(s)
+    pm.scan_folder('/opt/hg/scalix_server/products/')
+    print(pm.__dict__)
+
+    return
     print(System.command_exists('wipe'))
-    #return
-    #get_java_version determine_interface
     print(System.determine_interface(System.determine_ip()))
     print(System.determine_ip())
     print(System.get_java_version())
@@ -58,6 +62,13 @@ def main(args):
     print(System.disk_space('/', '/opt'))
     #print(System.open_url('http://python.org/'))
 
+def main(args):
+    logger.LOGGER = logger.create_logger('Merlin', directory=args['--logdir'],
+                                         debug=args['--debug'])
+
+    logger.info("Initializing Installer version", version.get_version(),
+                output=True)
+    s = System()
     logger.info('Running on:\n', s, output=True)
 
     if not args['--no-root'] and os.geteuid() != 0:
@@ -78,4 +89,5 @@ if __name__ == '__main__':
     from docopt import docopt
 
     ARGS = docopt(__doc__, version=version.get_version())
-    main(ARGS)
+    #main(ARGS)
+    test(ARGS)
