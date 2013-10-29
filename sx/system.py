@@ -43,26 +43,28 @@ Supported platforms item's descripton
 )
 
 """
+
 SUPPORTED_PLATFORMS = (
     ('CentOS', '6', 'Final', ['x86_64', 'i386'], 'rhel6', RPM),
-    ('Ubuntu', '13.10', 'saucy', ['x86_64'], '???', DEB),
+    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM), # '???', DEB
 )
 
 class System(object):
 
     def __init__(self):
         self.platform = sys.platform
-        self.machine = None
         self.__supported = False
         self.package_manager = None
         self.target_platform = None
+
+        if not self.is_linux():
+            return
 
         uname_data = platform.uname()
         for index, elem in enumerate(UNAME_KEYS):
             setattr(self, elem, uname_data[index])
 
-        if not self.is_linux():
-            return
+        self.arch = self.machine
 
         self.distro, self.distro_version, self.distro_abbr = \
             platform.linux_distribution()
@@ -90,10 +92,10 @@ class System(object):
         return self.platform.startswith('linux')
 
     def is_64bit(self):
-        return self.machine == 'x86_64'
+        return self.arch == 'x86_64'
 
     def is_32bit(self):
-        return self.machine in ['i386', 'i586', 'i686',]
+        return self.arch in ['i386', 'i586', 'i686',]
 
     def is_supported(self):
         return self.__supported

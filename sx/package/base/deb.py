@@ -16,11 +16,12 @@ try:
 except ImportError as exception:
     __AVAILABLE = False
 
-from sx.package.base import PackageBase
+from sx.package.base import PackageBase, PackageBaseFile
 
-class DebFile(object):
+class DebFile(PackageBaseFile):
 
     def __init__(self, deb_file):
+        self.file = deb_file
         pass
 
 class DebPackage(PackageBase):

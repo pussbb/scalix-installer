@@ -1,6 +1,5 @@
 __author__ = 'pussbb'
 
-
 class PackageBase(object):
 
     def __init__(self, available, file_extention):
@@ -16,14 +15,61 @@ class PackageBase(object):
         return self.__file_extention
 
     def package(self, *args, **kwargs):
-        raise NotImplemented
+        raise NotImplementedError()
 
     def install(self, package):
-        raise NotImplemented
+        raise NotImplementedError()
 
     def update(self, package):
-        raise NotImplemented
+        raise NotImplementedError()
 
     def uninstall(self, package):
-        raise NotImplemented
+        raise NotImplementedError()
 
+
+class PackageBaseFile(object):
+
+    @property
+    def name(self):
+        raise NotImplementedError()
+
+    @property
+    def version(self):
+        raise NotImplementedError()
+
+    @property
+    def description(self):
+        raise NotImplementedError()
+
+    @property
+    def license(self):
+        raise NotImplementedError()
+
+    @property
+    def summary(self):
+        raise NotImplementedError()
+
+    @property
+    def platform(self):
+        raise NotImplementedError()
+
+    @property
+    def release(self):
+        raise NotImplementedError()
+
+    @property
+    def arch(self):
+        raise NotImplementedError()
+
+    @property
+    def noarch(self):
+        return self.arch == 'noarch'
+
+    def is_32bit(self):
+        return self.arch in ['i386', 'i586', 'i686',]
+
+    def is_64bit(self):
+        return self.arch == 'x86_64'
+
+    def is_source(self):
+        raise NotImplementedError()

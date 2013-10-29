@@ -13,54 +13,74 @@ __AVAILABLE = True
 
 import os
 
-from sx.package.base import PackageBase
+from sx.package.base import PackageBase, PackageBaseFile
+
+__all__ = ["RPM"]
 
 try:
     import rpm
 except ImportError as exception:
     __AVAILABLE = False
 
-def is_available():
-    return __AVAILABLE
+_ts = rpm.ts()
 
-def file_extention():
-    return "rpm"
-
-RPMTAGS = [
-    'RPMTAG_NAME',
-    'RPMTAG_VERSION',
-    'RPMTAG_RELEASE',
-    'RPMTAG_SUMMARY',
-    'RPMTAG_DESCRIPTION',
-    'RPMTAG_SIZE',
-    'RPMTAG_LICENSE',
-    'RPMTAG_OS',
-    'RPMTAG_ARCH',
-    'RPMTAG_PLATFORM',
-]
-
-class RpmFile(object):
+class RpmFile(PackageBaseFile):
 
     def __init__(self, rpm_file):
-        ts = rpm.ts()
+        self.file = rpm_file
         self.header = None
         fdno = os.open(rpm_file, os.O_RDONLY)
         try:
-            ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
-            self.header = ts.hdrFromFdno(fdno)
+            _ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
+            self.header = _ts.hdrFromFdno(fdno)
         except rpm.error as exception:
             pass
         finally:
             os.close(fdno)
 
-        for item in RPMTAGS:
-            name = item.split('_')[1].lower()
-            setattr(self, name, self.header[getattr(rpm, item)])
-        print(self.__dict__)
+    @property
+    def name(self):
+        return self.header[rpm.RPMTAG_NAME]
+
+    @property
+    def version(self):
+        return self.header[rpm.RPMTAG_VERSION]
+
+    @property
+    def description(self):
+        return self.header[rpm.RPMTAG_DESCRIPTION]
+
+    @property
+    def arch(self):
+        return self.header[rpm.RPMTAG_ARCH]
+
+    @property
+    def platform(self):
+        platform_ = self.header[rpm.RPMTAG_PLATFORM]
+        if platform_ and platform_.find('-') == -1:
+            return platform_
+        return self.release.split('.')[-1]
+
+    def is_source(self):
+        return self.header[rpm.RPMTAG_SOURCEPACKAGE]
+
+    @property
+    def license(self):
+        return self.header[rpm.RPMTAG_LICENSE]
+
+    @property
+    def release(self):
+        return self.header[rpm.RPMTAG_RELEASE]
+
+    @property
+    def summary(self):
+        return self.header[rpm.RPMTAG_SUMMARY]
+
+
 
 class RpmPackage(PackageBase):
-
     def package(self, *args, **kwargs):
         return RpmFile(*args, **kwargs)
+
 
 RPM = RpmPackage(__AVAILABLE, 'rpm')
