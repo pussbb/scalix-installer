@@ -6,6 +6,9 @@ class PackageBase(object):
         self.__available = available
         self.__file_extention = file_extention
 
+    def __repr__(self):
+        return "{0} file based".format(self.file_extention)
+
     @property
     def available(self):
         return self.__available
@@ -73,3 +76,11 @@ class PackageBaseFile(object):
 
     def is_source(self):
         raise NotImplementedError()
+
+    def __repr__(self, indent=""):
+        return '{name}\n{indent}File: {file}\n{indent}Version: {ver}\n' \
+               '{indent}Description: {desc}\n{indent}Architecture: {arch}\n' \
+               '{indent}License: {lic}'\
+            .format(name=self.name, indent=indent, file=self.file,
+                    ver=self.version, desc=self.description, arch=self.arch,
+                    lic=self.license)

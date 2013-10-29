@@ -23,11 +23,11 @@ LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 LOGGER = None
 DEBUG = False
 
-def create_logger(name, debug=False, filename='scalix-installer',
+def create_logger(name, debug_=False, filename='scalix-installer',
                  directory=None):
 
     logger = logging.getLogger(name)
-    if debug:
+    if debug_:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
@@ -47,18 +47,18 @@ def is_debug():
 
 def logger_wrapper(func):
     def real_wrapper(*args, **kwargs):
-        list = []
+        list_ = []
         debug_mode = is_debug()
         for item in args:
             if isinstance(item, object) and debug_mode:
                 item = repr(item)
             else:
                 item = str(item)
-            list.append(item)
+            list_.append(item)
 
         if is_debug() or kwargs.get('output', False):
-            print(*list)
-        return func(' '.join(list).strip())
+            print(*list_)
+        return func(' '.join(list_).strip())
     return real_wrapper
 
 @logger_wrapper

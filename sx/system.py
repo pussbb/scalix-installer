@@ -16,8 +16,7 @@ import socket
 import re
 
 from sx import utils
-from sx.exceptions import ScalixExternalCommand, \
-    ScalixExternalCommandNotFound, ScalixException
+from sx.exceptions import ScalixExternalCommand, ScalixExternalCommandNotFound
 import sx.logger as logger
 
 from sx.package.base.rpm import RPM
@@ -31,6 +30,7 @@ UNAME_KEYS = [
     'machine',
     'processor'
 ]
+
 """
 Supported platforms item's descripton
 (
@@ -101,7 +101,7 @@ class System(object):
         return self.__supported
 
     def __get_extra_data_if_supported(self):
-        current_platform = (self.distro, self.distro_version, self.machine)
+        current_platform = (self.distro, self.distro_version, self.arch)
         for supported_platform in SUPPORTED_PLATFORMS:
             if current_platform[0] != supported_platform[0]:
                 continue

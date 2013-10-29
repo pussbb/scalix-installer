@@ -46,8 +46,6 @@ class PackageManager(object):
 
         self.packages[package.name] = package
 
-        print(package.file)
-
     def package_for_arch(self, package):
         result = False
         if package.is_source():
@@ -70,3 +68,12 @@ class PackageManager(object):
             result = True
         return result
 
+    def __repr__(self):
+        result = "Package manager information:\nSystem package manager: {0}\n"\
+            .format(repr(self.system.package_manager))
+
+        result += "Available packages:\n"
+        indent = " "*10
+        for package in self.packages.values():
+            result += "{0} - {1}\n\n".format(" "*5, package.__repr__(indent))
+        return result
