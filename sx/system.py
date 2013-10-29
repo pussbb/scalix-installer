@@ -16,8 +16,12 @@ import socket
 import re
 
 from sx import utils
-from sx.exceptions import ScalixExternalCommand, ScalixExternalCommandNotFound
+from sx.exceptions import ScalixExternalCommand, \
+    ScalixExternalCommandNotFound, ScalixException
 import sx.logger as logger
+
+from sx.package.base.rpm import RPM
+from sx.package.base.deb import DEB
 
 UNAME_KEYS = [
     'system',
@@ -35,13 +39,13 @@ Supported platforms item's descripton
     'Final', # distro abbreviation
     'x86_64', #platfrom architecture 32bit's or 64 bit's
     'rhel6' # packages release abbreviation
+    'rpm' # system package manager
 )
 
 """
 SUPPORTED_PLATFORMS = (
-    ('CentOS', '6', 'Final', 'x86_64', 'rhel6'),
-    ('CentOS', '6', 'Final', 'x86', 'rhel6'),
-    ('Ubuntu', '13.10', 'saucy', 'x86_64', '???'),
+    ('CentOS', '6', 'Final', ['x86_64', 'i386'], 'rhel6', RPM),
+    ('Ubuntu', '13.10', 'saucy', ['x86_64'], '???', DEB),
 )
 
 class System(object):
@@ -54,14 +58,23 @@ class System(object):
         self.release = None
         self.version = None
         self.processor = None
+        self.__supported = False
+        self.package_base = None
 
         uname_data = platform.uname()
         for index, elem in enumerate(UNAME_KEYS):
             setattr(self, elem, uname_data[index])
 
-        if self.is_linux():
-            self.distro, self.distro_version, self.distro_abbr = \
+        if not self.is_linux():
+            return
+
+        self.distro, self.distro_version, self.distro_abbr = \
             platform.linux_distribution()
+
+        extra_data = self.__get_extra_data_if_supported()
+        if extra_data:
+            self.__supported = True
+            self.package_base = extra_data[-1]
 
     def __repr__(self):
         result = "System: {system}\nRelease: {release}\n" \
@@ -85,6 +98,9 @@ class System(object):
         return self.machine in ['i386', 'i586', 'i686',]
 
     def is_supported(self):
+        return self.__supported
+
+    def __get_extra_data_if_supported(self):
         current_platform = ()
         if self.is_linux():
             current_platform = (self.distro, self.distro_version, self.machine)
@@ -94,11 +110,13 @@ class System(object):
                 continue
             if not current_platform[1].startswith(supported_platform[1]):
                 continue
-            if current_platform[2] != supported_platform[3]:
+            if current_platform[2] not in supported_platform[3]:
                 continue
-            return True
+            return supported_platform
 
-        return False
+        return ()
+
+    #def __
 
     @staticmethod
     def command_exists(command):

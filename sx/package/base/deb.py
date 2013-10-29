@@ -16,13 +16,16 @@ try:
 except ImportError as exception:
     __AVAILABLE = False
 
-def is_available():
-    return __AVAILABLE
-
-def file_extention():
-    return "deb"
+from sx.package.base import PackageBase
 
 class DebFile(object):
 
     def __init__(self, deb_file):
         pass
+
+class DebPackage(PackageBase):
+
+    def package(self, *args, **kwargs):
+        return DebFile(*args, **kwargs)
+
+DEB = DebPackage(__AVAILABLE, 'deb')

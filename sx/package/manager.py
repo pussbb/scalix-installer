@@ -11,32 +11,26 @@ __author__ = 'pussbb'
 
 import os
 
-import sx.package.drivers.deb as Deb
-import sx.package.drivers.rpm as Rpm
+from sx.package.base.deb import DEB
+from sx.package.base.rpm import RPM
 
 class PackageManager(object):
 
     def __init__(self, system):
         self.system = system
-        self.packages = self.__packages_list()
-
-    def __packages_list(self):
-        result = {}
-        for driver in [Deb,Rpm]:
-            if not driver.is_available():
+        self.package_drivers = []
+        for driver in [DEB, RPM]:
+            if not driver.available:
                 continue
-            result[driver.file_extention()] = {
-                'noarch': {},
-                'sources': {},
-                'other': {},
-            }
+            self.package_drivers.append(driver)
 
-        return result
 
     def scan_folder(self, folder):
-        self.packages = self.__packages_list()
+
         for root, _, files in os.walk(folder, followlinks=True):
             for file_ in files:
-                if file_.endswith('rpm'):
-                    Rpm.RpmFile(os.path.join(root, file_))
+
+                for driver in self.package_drivers:
+                    if file_.endswith(driver.file_extention):
+                        driver.package(os.path.join(root, file_))
                 #print(file_)
