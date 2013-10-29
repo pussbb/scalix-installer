@@ -24,13 +24,13 @@ class PackageManager(object):
                 continue
             self.package_drivers.append(driver)
 
+        self.package_manager = self.system.package_manager
+
 
     def scan_folder(self, folder):
 
         for root, _, files in os.walk(folder, followlinks=True):
             for file_ in files:
-
-                for driver in self.package_drivers:
-                    if file_.endswith(driver.file_extention):
-                        driver.package(os.path.join(root, file_))
+                if file_.endswith(self.package_manager.file_extention):
+                    self.package_manager.package(os.path.join(root, file_))
                 #print(file_)

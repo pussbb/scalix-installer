@@ -53,13 +53,9 @@ class System(object):
     def __init__(self):
         self.platform = sys.platform
         self.machine = None
-        self.system = None
-        self.node = None
-        self.release = None
-        self.version = None
-        self.processor = None
         self.__supported = False
-        self.package_base = None
+        self.package_manager = None
+        self.target_platform = None
 
         uname_data = platform.uname()
         for index, elem in enumerate(UNAME_KEYS):
@@ -74,7 +70,9 @@ class System(object):
         extra_data = self.__get_extra_data_if_supported()
         if extra_data:
             self.__supported = True
-            self.package_base = extra_data[-1]
+            self.package_manager = extra_data[-1]
+            self.target_platform = extra_data[-2]
+
 
     def __repr__(self):
         result = "System: {system}\nRelease: {release}\n" \
@@ -101,10 +99,7 @@ class System(object):
         return self.__supported
 
     def __get_extra_data_if_supported(self):
-        current_platform = ()
-        if self.is_linux():
-            current_platform = (self.distro, self.distro_version, self.machine)
-
+        current_platform = (self.distro, self.distro_version, self.machine)
         for supported_platform in SUPPORTED_PLATFORMS:
             if current_platform[0] != supported_platform[0]:
                 continue
@@ -115,8 +110,6 @@ class System(object):
             return supported_platform
 
         return ()
-
-    #def __
 
     @staticmethod
     def command_exists(command):
