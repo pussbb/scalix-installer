@@ -21,13 +21,12 @@ __all__ = ["LOGGER", "info", "warning", "error", "critical", "debug",
 LOG_FILENAME_FORMAT = "{filename}.{0}-{1}-{2}.{3}-{4}-{5}.log"
 LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 LOGGER = None
-DEBUG = False
 
-def create_logger(name, debug_=False, filename='scalix-installer',
+def create_logger(name, debug=False, filename='scalix-installer',
                  directory=None):
 
     logger = logging.getLogger(name)
-    if debug_:
+    if debug:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
