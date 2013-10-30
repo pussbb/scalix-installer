@@ -1,5 +1,7 @@
 __author__ = 'pussbb'
 
+from distutils.version import StrictVersion
+
 class PackageBase(object):
 
     def __init__(self, available, file_extention):
@@ -32,8 +34,32 @@ class PackageBase(object):
 
 class PackageBaseFile(object):
 
-    def __cmp__(self, other):
-        raise NotImplementedError
+    def __lt__(self, other):
+        #x<y
+        return StrictVersion(self.version) < StrictVersion(other.version)
+
+    def __le__(self, other):
+        #x<=y
+        return StrictVersion(self.version) <= StrictVersion(other.version)
+
+    def __eq__(self, other):
+        #x==y
+        return StrictVersion(self.version) == StrictVersion(other.version)
+
+    def __ne__(self, other):
+        #x!=y and x<>y
+        return StrictVersion(self.version) != StrictVersion(other.version)
+
+    def __ge__(self, other):
+        #x>=y
+        return StrictVersion(self.version) >= StrictVersion(other.version)
+
+    def __gt__(self, other):
+        #x>y
+        return StrictVersion(self.version) > StrictVersion(other.version)
+
+    def __hash__(self):
+        return hash(self)
 
     @property
     def name(self):

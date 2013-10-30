@@ -12,7 +12,7 @@ __author__ = 'pussbb'
 __AVAILABLE = True
 
 import os
-from distutils.version import StrictVersion
+
 
 from sx.package.base import PackageBase, PackageBaseFile
 
@@ -38,10 +38,6 @@ class RpmFile(PackageBaseFile):
             pass
         finally:
             os.close(fdno)
-
-    def __cmp__(self, other):
-        return (self.name == other.name and
-               StrictVersion(self.version) == StrictVersion(other.version))
 
     @property
     def name(self):

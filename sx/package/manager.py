@@ -44,7 +44,7 @@ class PackageManager(object):
             return
 
         if package.name in self.packages.keys() and \
-                        package == self.packages[package.name]:
+                        package <= self.packages[package.name]:
             return
 
         self.packages[package.name] = package
