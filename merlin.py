@@ -44,8 +44,11 @@ def test(args):
     pm = PackageManager(s)
     #pm.scan_folder('/opt/hg/scalix_server/dist/rpm/')
     #print(pm.__dict__)
-    pm.scan_folder('/opt/hg/scalix_server/products/')
+    pm.scan_folder('../products/')
+    pm.proccess(*pm.packages)
     print(repr(pm))
+
+
 
     return
     print(System.command_exists('wipe'))

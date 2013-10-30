@@ -25,6 +25,7 @@ except ImportError as exception:
 
 _ts = rpm.ts()
 _ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
+#_ts.initDB()
 
 class RpmFile(PackageBaseFile):
 
@@ -79,7 +80,13 @@ class RpmFile(PackageBaseFile):
 
     @property
     def provides(self):
-        return self.header[rpm.RPMTAG_PROVIDENEVRS]
+        versions = self.header[rpm.RPMTAG_PROVIDEVERSION]
+        packages = self.header[rpm.RPMTAG_PROVIDES]
+        result = []
+        for index, name in enumerate(packages):
+            result.append((name, versions[index]))
+        return result
+
 
     @property
     def confilts(self):
@@ -87,14 +94,11 @@ class RpmFile(PackageBaseFile):
 
     @property
     def requires(self):
-        requires_ = self.header[rpm.RPMTAG_REQUIRENEVRS]
+        versions = self.header[rpm.RPMTAG_REQUIREVERSION]
+        packages =  self.header[rpm.RPMTAG_REQUIRES]
         result = []
-        for item in requires_:
-            parts = item.split()
-            if len(parts) == 1:
-                result.append((item, None, None))
-            else:
-                result.append((parts[0], parts[1], parts[2]))
+        for index, name in enumerate(packages):
+            result.append((name, None, versions[index]))
         return result
 
     @property
@@ -108,54 +112,56 @@ class RpmFile(PackageBaseFile):
         inst_h = _ts.dbMatch('name', self.name)[0]
         return inst_h.dsOfHeader().EVR() > self.header.dsOfHeader().EVR()
 
+rpmtsCallback_fd = None
+
 class RpmPackage(PackageBase):
 
     def package(self, *args, **kwargs):
         return RpmFile(*args, **kwargs)
 
-    def uninstall(self, package):
-        _ts.addErase(package.header)
+    def uninstall(self, *args):
+        if len(args) == 1 and isinstance(args[0], list):
+            args = args[0]
+        for package in args:
+            _ts.addErase(package.header)
 
     def __package_instalation_data(self, package):
         key = 'i'
         if package.installed or package.upgradable:
             key = 'u'
-        return (package.header, os.path.basename(package.file), key)
+        return [package.header, package.file, key]
 
-    def add(self, package):
-        _ts.addInstall(*self.__package_instalation_data(package))
+    def add(self, *args):
+        if len(args) == 1 and isinstance(args[0], list):
+            args = args[0]
+        for package in args:
+            print(*self.__package_instalation_data(package))
+            _ts.addInstall(*self.__package_instalation_data(package))
+
+    def check(self):
+        return _ts.check()
 
     def order(self, packages):
         ts = rpm.ts()
         for package in packages.values():
             ts.addInstall(*self.__package_instalation_data(package))
-
-        ts.check()
+        #ts.check()
         ts.order()
         result = []
-
         for te in ts:
             result.append(packages.get(te.N()))
         return result
 
-    def runCallback(reason, amount, total, key, client_data):
-        """
-        http://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch16s06s04.html
-            if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
-                print "Opening file. ", reason, amount, total, key, client_data
-                rpmtsCallback_fd = os.open(client_data, os.O_RDONLY)
-                return rpmtsCallback_fd
-            elif reason == rpm.RPMCALLBACK_INST_START:
-                print "Closing file. ", reason, amount, total, key, client_data
-                os.close(rpmtsCallback_fd)
-        """
-        pass
 
     def run(self):
         #TODO write exceptions
-        _ts.check()
+        dep = _ts.check()
+        if dep:
+            return dep
         _ts.order()
+
         _ts.run()
+        #_ts.test(self.runCallback, 1)
 
 
 RPM = RpmPackage(__AVAILABLE, 'rpm')

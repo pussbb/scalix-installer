@@ -13,6 +13,7 @@ import os
 
 from sx.package.base.deb import DEB
 from sx.package.base.rpm import RPM
+from sx.package.base import PackageBaseFile
 import sx.utils as utils
 
 class PackageManager(object):
@@ -32,9 +33,10 @@ class PackageManager(object):
             for file_ in files:
                 if file_.endswith(self.system.package_manager.file_extention):
                     self.__add_package(root, file_, packages)
-        #print(repr(packages))
+
         self.packages_dict = packages
         self.packages = self.system.package_manager.order(packages)
+
 
     def __add_package(self, directory, filename, packages):
         file_ = utils.absolute_file_path(filename, directory)
@@ -87,3 +89,23 @@ class PackageManager(object):
         for package in packages:
             result += "{0} - {1}\n\n".format(" "*5, package.__repr__(indent))
         return result
+
+    def proccess(self, *args, **kwargs):
+        if len(args) == 1:
+            args = args[0]
+
+        for package in args:
+
+            if not isinstance(package, PackageBaseFile):
+                package = self.packages_dict.get(package)
+                if not package:
+                    raise StandardError("Unknown package")
+            if not kwargs.get('delete', False):
+                self.system.package_manager.add(package)
+            else:
+                self.system.package_manager.uninstall(package)
+
+        dep = self.system.package_manager.check()
+        if not dep:
+            self.system.package_manager.run()
+

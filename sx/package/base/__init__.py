@@ -22,14 +22,17 @@ class PackageBase(object):
     def package(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def add(self, package):
+    def add(self, *args):
         raise NotImplementedError()
 
     def order(self, packages):
         raise NotImplementedError
 
-    def uninstall(self, package):
+    def uninstall(self, *args):
         raise NotImplementedError()
+
+    def check(self):
+        raise NotImplementedError
 
     def run(self):
         raise NotImplementedError()
