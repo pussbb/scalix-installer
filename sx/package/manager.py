@@ -19,20 +19,24 @@ class PackageManager(object):
 
     def __init__(self, system):
         self.system = system
-        self.packages = {}
+        self.packages = []
+        self.packages_dict = {}
 
     @staticmethod
     def available_drivers(self):
         return [driver for driver in [DEB, RPM] if driver.available]
 
     def scan_folder(self, folder):
+        packages = {}
         for root, _, files in os.walk(folder, followlinks=True):
             for file_ in files:
                 if file_.endswith(self.system.package_manager.file_extention):
-                    self.__add_package(root, file_)
-        #print(self.packages.keys())
+                    self.__add_package(root, file_, packages)
+        #print(repr(packages))
+        self.packages_dict = packages
+        self.packages = self.system.package_manager.order(packages)
 
-    def __add_package(self, directory, filename):
+    def __add_package(self, directory, filename, packages):
         file_ = utils.absolute_file_path(filename, directory)
         package = self.system.package_manager.package(file_)
 
@@ -43,11 +47,11 @@ class PackageManager(object):
         if not self.package_for_arch(package):
             return
 
-        if package.name in self.packages.keys() and \
-                        package <= self.packages[package.name]:
+        if package.name in packages and \
+                        package <= packages[package.name]:
             return
 
-        self.packages[package.name] = package
+        packages[package.name] = package
 
 
     def package_for_arch(self, package):
@@ -78,6 +82,8 @@ class PackageManager(object):
 
         result += "Available packages:\n"
         indent = " "*10
-        for package in self.packages.values():
+        packages = self.packages[:]
+        #packages.reverse()
+        for package in packages:
             result += "{0} - {1}\n\n".format(" "*5, package.__repr__(indent))
         return result

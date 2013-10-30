@@ -22,15 +22,17 @@ class PackageBase(object):
     def package(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def install(self, package):
+    def add(self, package):
         raise NotImplementedError()
 
-    def update(self, package):
-        raise NotImplementedError()
+    def order(self, packages):
+        raise NotImplementedError
 
     def uninstall(self, package):
         raise NotImplementedError()
 
+    def run(self):
+        raise NotImplementedError()
 
 class PackageBaseFile(object):
 
@@ -117,6 +119,14 @@ class PackageBaseFile(object):
 
     def is_source(self):
         raise NotImplementedError()
+
+    @property
+    def installed(self):
+        raise NotImplementedError
+
+    @property
+    def upgradable(self):
+        raise NotImplementedError
 
     def __repr__(self, indent=""):
         return '{name}\n{indent}File: {file}\n{indent}Version: {ver}\n' \
