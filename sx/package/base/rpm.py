@@ -12,6 +12,7 @@ __author__ = 'pussbb'
 __AVAILABLE = True
 
 import os
+from distutils.version import StrictVersion
 
 from sx.package.base import PackageBase, PackageBaseFile
 
@@ -38,6 +39,10 @@ class RpmFile(PackageBaseFile):
         finally:
             os.close(fdno)
 
+    def __cmp__(self, other):
+        return (self.name == other.name and
+               StrictVersion(self.version) == StrictVersion(other.version))
+
     @property
     def name(self):
         return self.header[rpm.RPMTAG_NAME]
@@ -62,7 +67,7 @@ class RpmFile(PackageBaseFile):
         return self.release.split('.')[-1]
 
     def is_source(self):
-        return self.header[rpm.RPMTAG_SOURCEPACKAGE]
+        return self.header.isSource()
 
     @property
     def license(self):
@@ -76,7 +81,17 @@ class RpmFile(PackageBaseFile):
     def summary(self):
         return self.header[rpm.RPMTAG_SUMMARY]
 
+    @property
+    def provides(self):
+        return self.header[rpm.RPMTAG_PROVIDENEVRS]
 
+    @property
+    def confilts(self):
+        return self.header[rpm.RPMTAG_CONFLICTS]
+
+    @property
+    def requires(self):
+        return self.header[rpm.RPMTAG_REQUIRENEVRS]
 
 class RpmPackage(PackageBase):
     def package(self, *args, **kwargs):

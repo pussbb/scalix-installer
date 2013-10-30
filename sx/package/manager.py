@@ -20,18 +20,17 @@ class PackageManager(object):
     def __init__(self, system):
         self.system = system
         self.packages = {}
-        self.available_package_managers = []
 
-        for driver in [DEB, RPM]:
-            if not driver.available:
-                continue
-            self.available_package_managers.append(driver)
+    @staticmethod
+    def available_drivers(self):
+        return [driver for driver in [DEB, RPM] if driver.available]
 
     def scan_folder(self, folder):
         for root, _, files in os.walk(folder, followlinks=True):
             for file_ in files:
                 if file_.endswith(self.system.package_manager.file_extention):
                     self.__add_package(root, file_)
+        #print(self.packages.keys())
 
     def __add_package(self, directory, filename):
         file_ = utils.absolute_file_path(filename, directory)
@@ -44,7 +43,12 @@ class PackageManager(object):
         if not self.package_for_arch(package):
             return
 
+        if package.name in self.packages.keys() and \
+                        package == self.packages[package.name]:
+            return
+
         self.packages[package.name] = package
+
 
     def package_for_arch(self, package):
         result = False

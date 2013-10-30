@@ -32,6 +32,9 @@ class PackageBase(object):
 
 class PackageBaseFile(object):
 
+    def __cmp__(self, other):
+        raise NotImplementedError
+
     @property
     def name(self):
         raise NotImplementedError()
@@ -68,6 +71,18 @@ class PackageBaseFile(object):
     def noarch(self):
         return self.arch == 'noarch'
 
+    @property
+    def requires(self):
+        raise NotImplementedError
+
+    @property
+    def provides(self):
+        raise NotImplementedError
+
+    @property
+    def confilts(self):
+        raise  NotImplementedError
+
     def is_32bit(self):
         return self.arch in ['i386', 'i586', 'i686',]
 
@@ -79,8 +94,10 @@ class PackageBaseFile(object):
 
     def __repr__(self, indent=""):
         return '{name}\n{indent}File: {file}\n{indent}Version: {ver}\n' \
-               '{indent}Description: {desc}\n{indent}Architecture: {arch}\n' \
-               '{indent}License: {lic}'\
+               '{indent}Architecture: {arch}\n{indent}License: {lic}\n' \
+               '{indent}Requiers: {require}\n{indent}Confilts: {conflicts}\n' \
+               '{indent}Provides: {provides}\n'\
             .format(name=self.name, indent=indent, file=self.file,
-                    ver=self.version, desc=self.description, arch=self.arch,
-                    lic=self.license)
+                    ver=self.version, arch=self.arch, lic=self.license,
+                    require=self.requires, conflicts=self.confilts,
+                    provides=self.provides)
