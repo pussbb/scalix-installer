@@ -29,6 +29,9 @@ class PackageManager(object):
 
     def scan_folder(self, folder):
         packages = {}
+        self.packages_dict = {}
+        del self.packages[:]
+        self.system.packager.clear()
         for root, _, files in os.walk(folder, followlinks=True):
             for file_ in files:
                 if file_.endswith(self.system.packager.file_extention):
@@ -119,10 +122,22 @@ class PackageManager(object):
             if package:
                 message += " {0} ({1})".format( package.version, package.arch)
                 arch_string = " ( needs by {0} package) ".format(package.arch)
-            message += ' has follow unresolved dependencies :\n'
+            message += ' has following unresolved dependencies :\n'
             for type, type_data in data.items():
                 for dep in type_data:
                     message += "{0} ({1}) {3} {4} {5} {2}\n"\
                         .format(dep_indent, type, arch_string, *dep)
             result += message
+        return result
+
+    def format_problems(self, problems):
+        result = "Following problems occurred with packages:\n"
+        package_indent = " " * 5
+        problem_indent = package_indent * 5
+        for package_name, data in problems.items():
+            item = "{0}{1} has following problems:\n".format(package_indent,
+                                                             package_name)
+            for problem in data:
+                item += "{0}{1}\n".format(problem_indent, problem)
+            result += item
         return result

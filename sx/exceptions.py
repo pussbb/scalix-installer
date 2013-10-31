@@ -29,12 +29,26 @@ class ScalixProcessingException(ScalixException):
     """
     pass
 
-class ScalixUnresolvedDependencies(ScalixException):
+class ScalixPackageException(ScalixException):
+    """Base exception to determine problems with packages
+
+    """
+    pass
+
+class ScalixUnresolvedDependencies(ScalixPackageException):
 
     def __init__(self, dependecies):
         self.message = "Unresolved Dependecies"
-        super(ScalixException, self).__init__(self.message)
+        super(ScalixPackageException, self).__init__(self.message)
         self.dependecies = dependecies
+
+class ScalixPackageProblems(ScalixPackageException):
+
+    def __init__(self, problems):
+        self.message = "Problems with package"
+        super(ScalixPackageException, self).__init__(self.message)
+        self.problems = problems
+
 
 class ScalixExternalCommand(ScalixException):
     """Base exception class for executing external commands in shell

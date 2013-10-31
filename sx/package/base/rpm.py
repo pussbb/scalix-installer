@@ -13,9 +13,14 @@ __AVAILABLE = True
 
 import os
 
+import sys
+if sys.version_info[0] < 3:
+    import imp
+    imp.reload(sys)
+    sys.setdefaultencoding("UTF-8")
 
 from sx.package.base import PackageBase, PackageBaseFile
-from sx.exceptions import ScalixUnresolvedDependencies
+from sx.exceptions import ScalixUnresolvedDependencies, ScalixPackageProblems
 
 __all__ = ["RPM"]
 
@@ -113,7 +118,17 @@ class RpmFile(PackageBaseFile):
         inst_h = _ts.dbMatch('name', self.name)[0]
         return inst_h.dsOfHeader().EVR() > self.header.dsOfHeader().EVR()
 
-rpmtsCallback_fd = None
+rpmtsCallback_fd = 0
+
+def runCallback(reason, amount, total, key, client_data):
+    global rpmtsCallback_fd
+    if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
+        print ("Opening file. ", reason, amount, total, key, client_data)
+        rpmtsCallback_fd = os.open(key, os.O_RDONLY)
+        return rpmtsCallback_fd
+    elif reason == rpm.RPMCALLBACK_INST_START:
+        print ("Closing file. ", reason, amount, total, key, client_data)
+        os.close(rpmtsCallback_fd)
 
 class RpmPackage(PackageBase):
 
@@ -152,8 +167,7 @@ class RpmPackage(PackageBase):
 
     def __parse_dependencies(self, dependecies):
         result = {}
-        #'require': [],
-        #'conflict': [],
+
         for dep in dependecies:
             package, unresolved, needs_flags, suggested_package, sense = dep
             if package[0] not in result:
@@ -172,10 +186,79 @@ class RpmPackage(PackageBase):
                 result[package[0]]['require'].append(data)
         return result
 
+    @staticmethod
+    def prob_flag_format(prob):
+        result = ""
+        if prob & rpm.RPMPROB_BADOS:
+            result += " (Bad OS) "
+        if prob & rpm.RPMPROB_BADRELOCATE:
+            result += " (Bad relocation) "
+        if prob & rpm.RPMPROB_CONFLICT:
+            result += " (Conflict) "
+        if prob & rpm.RPMPROB_BADARCH:
+            result += " ( bad architecture ) "
+        if prob & rpm.RPMPROB_DISKNODES:
+            result += " ( disk nodes ) "
+        if prob & rpm.RPMPROB_DISKSPACE:
+            result += " (disk space) "
+        if prob & rpm.RPMPROB_FILE_CONFLICT:
+            result += " (file conflit)"
+        if prob & rpm.RPMPROB_FILTER_DISKNODES:
+            result += " (filter disk nodes) "
+        if prob & rpm.RPMPROB_FILTER_DISKSPACE:
+            result += " ( filter disk space ) "
+        if prob & rpm.RPMPROB_FILTER_FORCERELOCATE:
+            result += " ( filter force relocate) "
+        if prob & rpm.RPMPROB_FILTER_IGNOREARCH:
+            result += " ( filter ignore search ) "
+        if prob & rpm.RPMPROB_FILTER_IGNOREOS:
+            result += " ( filter ignore os) "
+        if prob & rpm.RPMPROB_FILTER_OLDPACKAGE:
+            result += " (filter old package) "
+        if prob & rpm.RPMPROB_FILTER_REPLACENEWFILES:
+            result += " (filter replace new files) "
+        if prob & rpm.RPMPROB_FILTER_REPLACEOLDFILES:
+            result += " (filter replace old files) "
+        if prob & rpm.RPMPROB_FILTER_REPLACEPKG:
+            result += " (filter replace package ) "
+        if prob & rpm.RPMPROB_NEW_FILE_CONFLICT:
+            result += " ( new file conflict) "
+        if prob & rpm.RPMPROB_OLDPACKAGE:
+            result += " ( old package) "
+        if prob & rpm.RPMPROB_PKG_INSTALLED:
+            result += " ( package installed ) "
+        if prob & rpm.RPMPROB_REQUIRES:
+            result += " (package requires) "
+        return result
+
+    def __parse_problems(self, problems):
+        result = {}
+        for problem in problems:
+            if not result.get(problem.pkgNEVR):
+                result[problem.pkgNEVR] = []
+            item = " {0} {1}".format(RpmPackage.prob_flag_format(problem.type),
+                                     problem.altNEVR )
+            result[problem.pkgNEVR].append(item)
+        return result
+
+    def clear(self):
+        _ts.clean()
+        try:
+            _ts.clear()
+        except AttributeError as exception:
+            pass
+
     def check(self):
         dependecies = _ts.check()
+
         if dependecies:
-            raise ScalixUnresolvedDependencies(self.__parse_dependencies(dependecies))
+            raise ScalixUnresolvedDependencies(
+                self.__parse_dependencies(dependecies))
+
+        problems = _ts.problems()
+        if problems:
+            raise ScalixPackageProblems(self.__parse_problems(problems))
+
         return True
 
     def order(self, packages):
@@ -196,7 +279,8 @@ class RpmPackage(PackageBase):
 
         self.check()
         _ts.order()
-        _ts.run()
+        _ts.run(runCallback, 1)
+        self.clear()
         #_ts.test(self.runCallback, 1)
 
 

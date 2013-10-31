@@ -37,6 +37,9 @@ class PackageBase(object):
     def run(self):
         raise NotImplementedError()
 
+    def clear(self):
+        raise  NotImplementedError()
+
 class PackageBaseFile(object):
 
     def __lt__(self, other):

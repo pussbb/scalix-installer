@@ -27,7 +27,8 @@ __author__ = 'pussbb'
 
 import os
 
-from sx.exceptions import ScalixException, ScalixUnresolvedDependencies
+from sx.exceptions import ScalixException, ScalixPackageException, \
+    ScalixUnresolvedDependencies, ScalixPackageProblems
 import sx.version as version
 import sx.logger as logger
 from sx.system import System
@@ -47,8 +48,14 @@ def test(args):
     pm.scan_folder('../products/')
     try:
         pm.proccess(*pm.packages)
-    except ScalixUnresolvedDependencies as exception:
-        print(pm.format_dependencies(exception.dependecies))
+    except ScalixPackageException as exception:
+        if isinstance(exception, ScalixUnresolvedDependencies):
+            print(pm.format_dependencies(exception.dependecies))
+        elif isinstance(exception, ScalixPackageProblems):
+            print(pm.format_problems(exception.problems))
+        else:
+            # some unexpected exception
+            raise
     #print(repr(pm))
 
 
