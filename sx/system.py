@@ -54,7 +54,7 @@ class System(object):
     def __init__(self):
         self.platform = sys.platform
         self.__supported = False
-        self.package_manager = None
+        self.packager = None
         self.target_platform = None
 
         if not self.is_linux():
@@ -72,7 +72,7 @@ class System(object):
         extra_data = self.__get_extra_data_if_supported()
         if extra_data:
             self.__supported = True
-            self.package_manager = extra_data[-1]
+            self.packager = extra_data[-1]
             self.target_platform = extra_data[-2]
 
 

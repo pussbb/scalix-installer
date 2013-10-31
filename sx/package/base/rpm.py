@@ -15,6 +15,7 @@ import os
 
 
 from sx.package.base import PackageBase, PackageBaseFile
+from sx.exceptions import ScalixUnresolvedDependencies
 
 __all__ = ["RPM"]
 
@@ -135,17 +136,54 @@ class RpmPackage(PackageBase):
         if len(args) == 1 and isinstance(args[0], list):
             args = args[0]
         for package in args:
-            print(*self.__package_instalation_data(package))
             _ts.addInstall(*self.__package_instalation_data(package))
 
+    @staticmethod
+    def parse_need_flag(mask):
+        result = ''
+        if mask & rpm.RPMSENSE_EQUAL:
+            result = '='
+        if mask & rpm.RPMSENSE_GREATER:
+            result =  '>' + result
+        if mask & rpm.RPMSENSE_LESS:
+            result = '<' + result
+
+        return result
+
+    def __parse_dependencies(self, dependecies):
+        result = {}
+        #'require': [],
+        #'conflict': [],
+        for dep in dependecies:
+            package, unresolved, needs_flags, suggested_package, sense = dep
+            if package[0] not in result:
+                result[package[0]] = {
+                    'require': [],
+                    'conflict': [],
+                }
+            data = (
+                unresolved[0],
+                RpmPackage.parse_need_flag(needs_flags),
+                unresolved[1]
+            )
+            if sense is rpm.RPMDEP_SENSE_CONFLICTS:
+                result[package[0]]['conflicts'].append(data)
+            else:
+                result[package[0]]['require'].append(data)
+        return result
+
     def check(self):
-        return _ts.check()
+        dependecies = _ts.check()
+        if dependecies:
+            raise ScalixUnresolvedDependencies(self.__parse_dependencies(dependecies))
+        return True
 
     def order(self, packages):
         ts = rpm.ts()
         for package in packages.values():
             ts.addInstall(*self.__package_instalation_data(package))
-        #ts.check()
+
+        ts.check()
         ts.order()
         result = []
         for te in ts:
@@ -155,11 +193,9 @@ class RpmPackage(PackageBase):
 
     def run(self):
         #TODO write exceptions
-        dep = _ts.check()
-        if dep:
-            return dep
-        _ts.order()
 
+        self.check()
+        _ts.order()
         _ts.run()
         #_ts.test(self.runCallback, 1)
 

@@ -27,7 +27,7 @@ __author__ = 'pussbb'
 
 import os
 
-from sx.exceptions import ScalixException
+from sx.exceptions import ScalixException, ScalixUnresolvedDependencies
 import sx.version as version
 import sx.logger as logger
 from sx.system import System
@@ -45,8 +45,11 @@ def test(args):
     #pm.scan_folder('/opt/hg/scalix_server/dist/rpm/')
     #print(pm.__dict__)
     pm.scan_folder('../products/')
-    pm.proccess(*pm.packages)
-    print(repr(pm))
+    try:
+        pm.proccess(*pm.packages)
+    except ScalixUnresolvedDependencies as exception:
+        print(pm.format_dependencies(exception.dependecies))
+    #print(repr(pm))
 
 
 

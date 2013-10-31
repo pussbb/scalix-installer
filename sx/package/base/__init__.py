@@ -26,13 +26,13 @@ class PackageBase(object):
         raise NotImplementedError()
 
     def order(self, packages):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def uninstall(self, *args):
         raise NotImplementedError()
 
     def check(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def run(self):
         raise NotImplementedError()
@@ -104,15 +104,15 @@ class PackageBaseFile(object):
 
     @property
     def requires(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def provides(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def confilts(self):
-        raise  NotImplementedError
+        raise  NotImplementedError()
 
     def is_32bit(self):
         return self.arch in ['i386', 'i586', 'i686',]
@@ -125,11 +125,11 @@ class PackageBaseFile(object):
 
     @property
     def installed(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def upgradable(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def __repr__(self, indent=""):
         return '{name}\n{indent}File: {file}\n{indent}Version: {ver}\n' \

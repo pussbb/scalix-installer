@@ -11,8 +11,7 @@ __author__ = 'pussbb'
 class ScalixException(Exception):
     """ Base Exception"""
 
-    def __repr__(self):
-        return u"{0}: {1}".format(self.__class__.__name__, unicode(self.__dict__).encode())
+
 
 class ScalixLicenseError(ScalixException):
     """An exception type used to indicate a problem reading,
@@ -29,6 +28,13 @@ class ScalixProcessingException(ScalixException):
 
     """
     pass
+
+class ScalixUnresolvedDependencies(ScalixException):
+
+    def __init__(self, dependecies):
+        self.message = "Unresolved Dependecies"
+        super(ScalixException, self).__init__(self.message)
+        self.dependecies = dependecies
 
 class ScalixExternalCommand(ScalixException):
     """Base exception class for executing external commands in shell
