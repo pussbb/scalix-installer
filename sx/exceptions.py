@@ -39,14 +39,14 @@ class ScalixUnresolvedDependencies(ScalixPackageException):
 
     def __init__(self, dependecies):
         self.message = "Unresolved Dependecies"
-        super(ScalixPackageException, self).__init__(self.message)
+        ScalixPackageException.__init__(self)
         self.dependecies = dependecies
 
 class ScalixPackageProblems(ScalixPackageException):
 
     def __init__(self, problems):
         self.message = "Problems with package"
-        super(ScalixPackageException, self).__init__(self.message)
+        ScalixPackageException.__init__(self)
         self.problems = problems
 
 
@@ -59,7 +59,7 @@ class ScalixExternalCommand(ScalixException):
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=exit_code, msg=stderr or stdout)
 
-        super(ScalixException, self).__init__(message)
+        ScalixException.__init__(self)
         self.command = command
         self.stdout = stdout
         self.stderr = stderr

@@ -47,7 +47,14 @@ def test(args):
     #print(pm.__dict__)
     pm.scan_folder('../products/')
     try:
-        pm.proccess(*pm.packages)
+
+        for package in pm.packages:
+            if not package.installed:
+                package.install = True
+            else:
+                package.unistall = True
+        pm.proccess()
+
     except ScalixPackageException as exception:
         if isinstance(exception, ScalixUnresolvedDependencies):
             print(pm.format_dependencies(exception.dependecies))

@@ -1,6 +1,7 @@
 __author__ = 'pussbb'
 
 from distutils.version import StrictVersion
+from sx.exceptions import ScalixPackageException
 
 class PackageBase(object):
 
@@ -41,6 +42,11 @@ class PackageBase(object):
         raise  NotImplementedError()
 
 class PackageBaseFile(object):
+
+    def __init__(self):
+        self.__install = False
+        self.__upgrade = False
+        self.__uninstall = False
 
     def __lt__(self, other):
         #x<y
@@ -133,6 +139,39 @@ class PackageBaseFile(object):
     @property
     def upgradable(self):
         raise NotImplementedError()
+
+    @property
+    def install(self):
+        return self.__install
+
+    @install.setter
+    def install(self, state):
+        if self.installed and state:
+            raise ScalixPackageException("Package has already installed")
+        self.__install = state
+
+    @property
+    def upgrade(self):
+        return self.__upgrade
+
+    @upgrade.setter
+    def upgrade(self, state):
+        if not self.installed and state:
+            raise ScalixPackageException("Package not installed that\'s why"
+                                         " it can not be mark for upgrade")
+        self.__upgrade =  state
+
+    @property
+    def uninstall(self):
+        return self.__uninstall
+
+    @uninstall.setter
+    def unistall(self, state):
+        if not self.installed and state:
+            raise ScalixPackageException("Package not installed that\'s why"
+                                         " it can not be mark for uninstall")
+        self.__uninstall = state
+
 
     def __repr__(self, indent=""):
         return '{name}\n{indent}File: {file}\n{indent}Version: {ver}\n' \

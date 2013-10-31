@@ -13,7 +13,9 @@ import os
 
 from sx.package.base.deb import DEB
 from sx.package.base.rpm import RPM
-from sx.package.base import PackageBaseFile
+
+from sx.package import *
+
 import sx.utils as utils
 
 class PackageManager(object):
@@ -38,8 +40,9 @@ class PackageManager(object):
                     self.__add_package(root, file_, packages)
 
         self.packages_dict = packages
-        self.packages = self.system.packager.order(packages)
-
+        #make ordere list of packages
+        for name in self.system.packager.order(packages):
+            self.packages.append(self.packages_dict[name])
 
     def __add_package(self, directory, filename, packages):
         file_ = utils.absolute_file_path(filename, directory)
@@ -93,25 +96,49 @@ class PackageManager(object):
             result += "{0} - {1}\n\n".format(" "*5, package.__repr__(indent))
         return result
 
-    def proccess(self, *args, **kwargs):
+    @staticmethod
+    def default_proccess_callback(reason, filename, precents=0):
+        if reason == PKG_INST_START:
+            print("Installing {0}  {1:{2}d}%".format(filename,precents,3),
+                  end="")
+        elif reason == PKG_INST_PROGRESS:
+            print("\b\b\b" + " {0:d}%".format(precents), end="")
+        elif reason == PKG_INST_STOP:
+            print(" Done!")
+        elif reason == PKG_UNINST_START:
+            print("Uninstalling {0} ".format(filename),
+                  end="")
+        elif reason == PKG_UNINST_PROGRESS:
+            print("\b\b\b %s" % "{0:{1}d}%".format(precents,3), end="")
+        elif reason == PKG_UNINST_STOP:
+            print(" Done!")
 
-        if len(args) == 1 and isinstance(args[0], (list, dict)):
-            args = args[0]
+    def proccess(self, callback=None):
 
-        for package in args:
+        if callback is None:
+            callback = PackageManager.default_proccess_callback
 
-            if not isinstance(package, PackageBaseFile):
-                package = self.packages_dict.get(package)
-                if not package:
-                    raise StandardError("Unknown package")
-            if not kwargs.get('delete', False):
+        for package in self.packages:
+            if package.install or package.upgrade:
                 self.system.packager.add(package)
-            else:
+            elif package.unistall:
                 self.system.packager.uninstall(package)
 
-        self.system.packager.run()
+        self.system.packager.run(callback)
 
     def format_dependencies(self, dependecies):
+        """
+            package_name {
+                'require': [
+                    (pack, '>=', ver),
+                    ()
+                ]
+                'conflicts':[
+                    (pack, '>=', ver),
+                    ()
+                ]
+            }
+        """
         result = "Following dependecies could not resolve:\n"
         package_indent = " " * 5
         dep_indent = package_indent * 5

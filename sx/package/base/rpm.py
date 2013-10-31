@@ -21,6 +21,8 @@ if sys.version_info[0] < 3:
 
 from sx.package.base import PackageBase, PackageBaseFile
 from sx.exceptions import ScalixUnresolvedDependencies, ScalixPackageProblems
+import sx.logger as logger
+from sx.package import *
 
 __all__ = ["RPM"]
 
@@ -28,7 +30,7 @@ try:
     import rpm
 except ImportError as exception:
     __AVAILABLE = False
-
+rpm.setVerbosity(False)
 _ts = rpm.ts()
 _ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
 #_ts.initDB()
@@ -36,6 +38,8 @@ _ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
 class RpmFile(PackageBaseFile):
 
     def __init__(self, rpm_file):
+        #super(PackageBaseFile, self).__init__()
+        PackageBaseFile.__init__(self)
         self.file = rpm_file
         self.header = None
         fdno = os.open(rpm_file, os.O_RDONLY)
@@ -118,19 +122,13 @@ class RpmFile(PackageBaseFile):
         inst_h = _ts.dbMatch('name', self.name)[0]
         return inst_h.dsOfHeader().EVR() > self.header.dsOfHeader().EVR()
 
-rpmtsCallback_fd = 0
-
-def runCallback(reason, amount, total, key, client_data):
-    global rpmtsCallback_fd
-    if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
-        print ("Opening file. ", reason, amount, total, key, client_data)
-        rpmtsCallback_fd = os.open(key, os.O_RDONLY)
-        return rpmtsCallback_fd
-    elif reason == rpm.RPMCALLBACK_INST_START:
-        print ("Closing file. ", reason, amount, total, key, client_data)
-        os.close(rpmtsCallback_fd)
 
 class RpmPackage(PackageBase):
+
+    """ file descriptor for run runCallback
+    """
+    fd = None
+    filename = None
 
     def package(self, *args, **kwargs):
         return RpmFile(*args, **kwargs)
@@ -139,7 +137,8 @@ class RpmPackage(PackageBase):
         if len(args) == 1 and isinstance(args[0], list):
             args = args[0]
         for package in args:
-            _ts.addErase(package.header)
+            mi = _ts.dbMatch('name', package.name)
+            _ts.addErase(*mi)
 
     def __package_instalation_data(self, package):
         key = 'i'
@@ -268,20 +267,70 @@ class RpmPackage(PackageBase):
 
         ts.check()
         ts.order()
-        result = []
-        for te in ts:
-            result.append(packages.get(te.N()))
-        return result
+        return [te.N() for te in ts]
 
+    def run_callback(self, reason, amount, total, key, callback):
+        logger.debug("run call back data", reason, amount, total, key,
+                     callback)
+        if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
+            logger.debug("Opening file.", key)
+            basename = os.path.basename(key)
+            RpmPackage.filename = '-'.join(basename.split('-')[:2])
+            RpmPackage.fd = os.open(key, os.O_RDONLY)
+            return RpmPackage.fd
+        elif reason == rpm.RPMCALLBACK_INST_CLOSE_FILE:
+            logger.debug("Closing file. ", key)
+            os.close(RpmPackage.fd)
+        elif reason == rpm.RPMCALLBACK_INST_PROGRESS:
+            complete_percents = amount*100//total
+            callback(PKG_INST_PROGRESS, RpmPackage.filename, complete_percents)
+            #hack on centos 6.4 rpm doesn't have RPMCALLBACK_INST_STOP
+            if amount == total:
+                callback(PKG_INST_STOP, RpmPackage.filename)
+            logger.debug("install progress")
+        #elif reason == rpm.RPMCALLBACK_INST_STOP:
+        #    logger.degug("instaltion stop")
+        elif reason == rpm.RPMCALLBACK_INST_START:
+            callback(PKG_INST_START, RpmPackage.filename)
+            logger.debug("instaltion start")
 
-    def run(self):
+        elif reason == rpm.RPMCALLBACK_UNINST_START:
+            callback(PKG_UNINST_START, key)
+            logger.debug("uninstall start")
+        elif reason == rpm.RPMCALLBACK_UNINST_PROGRESS:
+            callback(PKG_INST_PROGRESS, key, amount*100//total)
+            logger.debug("uninsatll progress")
+        elif reason == rpm.RPMCALLBACK_UNINST_STOP:
+            callback(PKG_UNINST_STOP, key)
+            logger.debug("uninstaltion stop")
+
+    def run(self, callback):
         #TODO write exceptions
 
         self.check()
         _ts.order()
-        _ts.run(runCallback, 1)
+        _ts.run(self.run_callback, callback)
         self.clear()
         #_ts.test(self.runCallback, 1)
 
 
 RPM = RpmPackage(__AVAILABLE, 'rpm')
+
+"""
+RPMCALLBACK_INST_CLOSE_FILE = 8
+RPMCALLBACK_INST_OPEN_FILE = 4
+RPMCALLBACK_INST_PROGRESS = 1
+RPMCALLBACK_INST_START = 2
+RPMCALLBACK_REPACKAGE_PROGRESS = 1024
+RPMCALLBACK_REPACKAGE_START = 2048
+RPMCALLBACK_REPACKAGE_STOP = 4096
+RPMCALLBACK_SCRIPT_ERROR = 32768
+RPMCALLBACK_TRANS_PROGRESS = 16
+RPMCALLBACK_TRANS_START = 32
+RPMCALLBACK_TRANS_STOP = 64
+RPMCALLBACK_UNINST_PROGRESS = 128
+RPMCALLBACK_UNINST_START = 256
+RPMCALLBACK_UNINST_STOP = 512
+RPMCALLBACK_UNKNOWN = 0
+RPMCALLBACK_UNPACK_ERROR = 8192
+"""
