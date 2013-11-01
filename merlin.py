@@ -34,17 +34,9 @@ import sx.logger as logger
 from sx.system import System
 from sx.package.manager import PackageManager
 
-def test(args):
-    logger.LOGGER = logger.create_logger('Merlin', directory=args['--logdir'],
-                                         debug=args['--debug'])
+def package_manager_test(system):
 
-    logger.info("Initializing Installer version", version.get_version(),
-                output=True)
-    s = System()
-
-    pm = PackageManager(s)
-    #pm.scan_folder('/opt/hg/scalix_server/dist/rpm/')
-    #print(pm.__dict__)
+    pm = PackageManager(system)
     pm.scan_folder('../products/')
     try:
 
@@ -65,9 +57,7 @@ def test(args):
             raise
     #print(repr(pm))
 
-
-
-    return
+def system_tests(system):
     print(System.command_exists('wipe'))
     print(System.determine_interface(System.determine_ip()))
     print(System.determine_ip())
@@ -75,23 +65,24 @@ def test(args):
     print(System.is_ibm_j2sdk())
     print(System.get_mx_records('allwebsuite.com'))
     print(System.get_ips())
-    print(System.get_FQDN())
-    print(System.is_FQDN())
+    print(System.get_fqdn())
+    print(System.is_fqdn())
     print(*System.listening_port(80))
-    print("supported", s.is_supported())
+    print("supported", system.is_supported())
     print("run level", System.run_level())
     print("Memory (total, free)", System.memory())
     print(System.disk_space('/', '/opt'))
     #print(System.open_url('http://python.org/'))
 
-def main(args):
+def init_logger(args):
     logger.LOGGER = logger.create_logger('Merlin', directory=args['--logdir'],
-                                         debug=args['--debug'])
+                                         debug_mode=args['--debug'])
 
     logger.info("Initializing Installer version", version.get_version(),
                 output=True)
-    s = System()
-    logger.info('Running on:\n', s, output=True)
+    logger.info("Using log file", logger.logger_filename())
+
+def main(args, system):
 
     if not args['--no-root'] and os.geteuid() != 0:
         raise ScalixException('Error: You need to be root or superuser to run this application')
@@ -111,5 +102,15 @@ if __name__ == '__main__':
     from docopt import docopt
 
     ARGS = docopt(__doc__, version=version.get_version())
-    #main(ARGS)
-    test(ARGS)
+    init_logger(ARGS)
+    system = System()
+    logger.info('Running on:\n', system, output=True)
+
+    try:
+        #main(ARGS, system)
+        system_tests(system)
+        #package_manager_test(system)
+    finally:
+        if logger.is_debug():
+            os.remove(logger.logger_filename(base_name=False))
+

@@ -32,6 +32,9 @@ from sx.exceptions import ScalixExternalCommandFailed, \
 import sx.logger as logger
 
 def current_directory():
+    """returns absolute file path to current module
+
+    """
     return os.path.dirname(os.path.realpath(__file__))
 
 def absolute_file_path(filename, directory=None, create_dir_if_needed=False):
@@ -81,6 +84,11 @@ BASH_CONDITIONS = (
 )
 
 def bash_command(command, with_find=True):
+    """helper function to inject bash command to find command for e.g.
+    on some system command $ifconfig -a won't execute because need to
+    use $/sbin/ifconfig -a
+
+    """
     result = command
     if not command.startswith("$(") and not command.startswith("{"):
         template = "$(type -P {0})"

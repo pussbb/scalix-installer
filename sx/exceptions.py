@@ -36,6 +36,23 @@ class ScalixPackageException(ScalixException):
     pass
 
 class ScalixUnresolvedDependencies(ScalixPackageException):
+    """General class which holds dependecies which could not resolve and
+    proceed installation
+    dependencies format
+    {
+        package_name {
+            'require': [
+                (pack, '>=', ver),
+                ()
+            ]
+            'conflicts':[
+                (pack, '>=', ver),
+                ()
+            ]
+        }
+    }
+
+    """
 
     def __init__(self, dependecies):
         self.message = "Unresolved Dependecies"
@@ -43,7 +60,15 @@ class ScalixUnresolvedDependencies(ScalixPackageException):
         self.dependecies = dependecies
 
 class ScalixPackageProblems(ScalixPackageException):
+    """General exception class which will contain problems with packages
+    Format:
+    {
+        'package_name' : [
+            'problem' - string
+        ]
+    }
 
+    """
     def __init__(self, problems):
         self.message = "Problems with package"
         ScalixPackageException.__init__(self)
@@ -55,7 +80,7 @@ class ScalixExternalCommand(ScalixException):
 
     """
     def __init__(self, command, exit_code, stdout, stderr):
-        message = "External command failed with exit code {code}!" \
+        self.message = "External command failed with exit code {code}!" \
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=exit_code, msg=stderr or stdout)
 

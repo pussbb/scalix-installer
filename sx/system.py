@@ -45,11 +45,15 @@ Supported platforms item's descripton
 """
 
 SUPPORTED_PLATFORMS = (
-    ('CentOS', '6', 'Final', ['x86_64', 'i386'], 'rhel6', RPM),
+    ('CentOS', '6', 'Final', ['x86_64', 'i686'], 'rhel6', RPM),
+
     ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM), # '???', DEB
 )
 
 class System(object):
+    """General class to get information obout system on which script is running
+
+    """
 
     def __init__(self):
         self.platform = sys.platform
@@ -76,6 +80,7 @@ class System(object):
             self.target_platform = extra_data[-2]
 
 
+
     def __repr__(self):
         result = "System: {system}\nRelease: {release}\n" \
                "Version: {version}\nMachine: {machine}\n" \
@@ -89,18 +94,42 @@ class System(object):
         return result
 
     def is_linux(self):
+        """ check is linux
+
+        """
         return self.platform.startswith('linux')
 
     def is_64bit(self):
+        """ is system 64 bit
+
+        @rtype bool
+        return True or False
+
+        """
         return self.arch == 'x86_64'
 
     def is_32bit(self):
+        """is system 32 bit
+
+        @rtype bool
+        return True or False
+
+        """
         return self.arch in ['i386', 'i586', 'i686',]
 
     def is_supported(self):
+        """ is supported
+
+        @rtype bool
+        return True or False
+
+        """
         return self.__supported
 
     def __get_extra_data_if_supported(self):
+        """ if platform supported let's get some additional data(instance of
+        packager etc)
+        """
         current_platform = (self.distro, self.distro_version, self.arch)
         for supported_platform in SUPPORTED_PLATFORMS:
             if current_platform[0] != supported_platform[0]:
@@ -115,6 +144,11 @@ class System(object):
 
     @staticmethod
     def command_exists(command):
+        """check if command present in system
+        @param command string name of command
+        @return True or False
+
+        """
         try:
             utils.execute(command, with_find=False)
             return True
@@ -124,26 +158,43 @@ class System(object):
 
     @staticmethod
     def run_level():
+        """Returns run level on linux
+
+        @rtype: int
+        @return int if could not determine run level it will return -1
+
+        """
         try:
-            result = utils.execute("runlevel", "|", utils.bash_command("gawk"),
-                                   "'{print $2}'")
-            return int(result[0])
+            cmd = ["runlevel", "|", utils.bash_command("gawk"), "'{print $2}'"]
+            return int(utils.execute(cmd)[0])
         except ScalixExternalCommand as exception:
             logger.critical("Could not get run level", exception)
             return -1
 
     @staticmethod
     def memory_total():
+        """ get total memory in system(linux only)
+
+        @rtype int
+        @return total memory or -1 if something went wrong
+
+        """
         try:
             #gawk '/MemTotal/ { print $2 }' /proc/meminfo
-            return int(utils.execute("gawk", "'/MemTotal/ { print $2 }'",
-                               "/proc/meminfo")[0])
+            result = utils.execute("gawk", "'/MemTotal/ { print $2 }'",
+                               "/proc/meminfo")
+            return int(result[0])
         except ScalixExternalCommand as exception:
             logger.critical("Could not get total memory", exception)
             return -1
 
     @staticmethod
     def memory_free():
+        """ get free memory in system(linux only)
+        @rtype int
+        @return total memory or -1 if something went wrong
+
+        """
         try:
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
             return int(utils.execute("gawk", "'/MemFree/ { print $2 }'",
@@ -154,10 +205,24 @@ class System(object):
 
     @staticmethod
     def memory():
+        """ get total memory and free memory in system(linux only)
+
+        @rtype tuple
+        @return tuple with total memory and free  if something went wrong some
+        of this values will be have -1
+
+        """
         return System.memory_total(), System.memory_free()
 
     @staticmethod
     def partition_size(folder):
+        """ get folder size in system(linux only)
+
+        @rtype int
+        @param folder - string full path to the folder
+        @return size or -1 if something went wrong some
+
+        """
         try:
             #"df -lP %s | gawk '{print $4}'"
             result = utils.execute("df", "-lP", folder, "|",
@@ -174,6 +239,13 @@ class System(object):
 
     @staticmethod
     def disk_space(*args):
+        """ get folder size for set of folders in system(linux only)
+
+        @rtype list
+        @param args list or tuple
+        @return list of size for each folder or -1 if something went wrong some
+
+        """
         if not args:
             return System.partition_size('/')
         result = []
@@ -183,6 +255,12 @@ class System(object):
 
     @staticmethod
     def open_url(url):
+        """open url in default browser
+
+        @rtype bool
+        @param url string
+        @return True or False
+        """
         try:
             return webbrowser.open(url, new=1)
         except webbrowser.Error as exception:
@@ -191,7 +269,7 @@ class System(object):
 
     @staticmethod
     def listening_port(port):
-        """
+        """checks if port opened
 
         @param port: port number integer
         @return: on success tulip which contain
@@ -211,16 +289,29 @@ class System(object):
 
 
     @staticmethod
-    def get_FQDN():
+    def get_fqdn():
+        """get  fully qualified domain name (FQDN)
+
+        """
         return socket.getfqdn()
 
     @staticmethod
-    def is_FQDN():
+    def is_fqdn():
+        """ check if fully qualified domain name (FQDN) is valid
+
+        """
         pattern = r'^[a-zA-Z0-9\-\.]+\.([0-9a-zA-Z]+)$'
-        return re.match(pattern, System.get_FQDN()) != None
+        return re.match(pattern, System.get_fqdn()) != None
 
     @staticmethod
     def get_ips():
+        """ get ips setted in system local netwoworks which starts with
+        127.x.x.x or 192.x.x.x will ignore
+
+        @rtype list
+        @return list of ip's in system
+
+        """
         #print(socket.gethostbyname(socket.gethostname()))
         try:
             lines = utils.execute("ip", "address", "|",
@@ -241,6 +332,12 @@ class System(object):
 
     @staticmethod
     def get_mx_records(domain):
+        """ tries to get mx record for domain
+
+        @type bool
+        @return True or False
+
+        """
         try:
             lines = utils.execute("dig", "-t", "MX", "+short", domain)
             return [i.strip() for i in lines]
@@ -250,6 +347,12 @@ class System(object):
 
     @staticmethod
     def get_java_version(raw=False):
+        """get version of installed java virtual machine
+
+        @return string if java installed and available in system or None if java
+        not installed
+
+        """
         try:
             lines = utils.execute("java", "-version")
             if raw or not lines:
@@ -262,6 +365,12 @@ class System(object):
 
     @staticmethod
     def is_ibm_j2sdk():
+        """check if installed java virtual machine from IBM
+
+        @rtype bool
+        @return True or False
+
+        """
         result = re.search(r'IBM\s(\w+)\sVM',
                            '\n'.join(System.get_java_version(raw=True) or []),
                            re.I | re.M)
@@ -269,23 +378,32 @@ class System(object):
 
     @staticmethod
     def determine_ip():
-        ip_list = socket.gethostbyaddr(System.get_FQDN())[2]
+        """ get ip address
+        @rtype string
+        return machine ip or localhost ip
+
+        """
+        ip_list = socket.gethostbyaddr(System.get_fqdn())[2]
         if ip_list:
             return ip_list[0]
         return '127.0.0.1'
 
     @staticmethod
-    def determine_interface(ip):
+    def determine_interface(ip_str):
+        """ get network interface on which ip setted
 
+        @param ip string
+        @return string name of interface or None
+
+        """
         try:
-            lines = utils.execute("ip", "addr", "show", "|",
-                                  utils.bash_command("grep"),
-                                  "[[:space:]]inet[[:space:]]{0}/".format(ip),
-                                  "|", utils.bash_command("head"), "-1", "|",
-                                  utils.bash_command("gawk"), "'{ print $NF }'")
+            cmd = ["ip", "addr", "show", "|", utils.bash_command("grep"),
+                   "[[:space:]]inet[[:space:]]{0}/".format(ip_str), "|",
+                   utils.bash_command("head"), "-1", "|",
+                   utils.bash_command("gawk"), "'{ print $NF }'"]
+            lines = utils.execute(cmd)
             if lines:
                 return lines[0].strip()
 
         except ScalixExternalCommand as exception:
             logger.warning("Could not determine interface", exception)
-            return False

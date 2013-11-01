@@ -19,6 +19,9 @@ from sx.package import *
 import sx.utils as utils
 
 class PackageManager(object):
+    """ Class to manipulate with packages
+    get packages from directory, check if package for system etc.
+    """
 
     def __init__(self, system):
         self.system = system
@@ -27,9 +30,17 @@ class PackageManager(object):
 
     @staticmethod
     def available_drivers(self):
+        """returns list of available drivers
+
+        """
         return [driver for driver in [DEB, RPM] if driver.available]
 
     def scan_folder(self, folder):
+        """scan folder recursively for package and add them._
+
+        @param folder - string
+
+        """
         packages = {}
         self.packages_dict = {}
         del self.packages[:]
@@ -45,6 +56,13 @@ class PackageManager(object):
             self.packages.append(self.packages_dict[name])
 
     def __add_package(self, directory, filename, packages):
+        """append package to the list if it can be installed/upgraded in system
+
+        @param directory - string
+        @param filename - string
+        @param package - temprory list
+
+        """
         file_ = utils.absolute_file_path(filename, directory)
         package = self.system.packager.package(file_)
 
@@ -63,6 +81,11 @@ class PackageManager(object):
 
 
     def package_for_arch(self, package):
+        """checks if  package for platform
+
+        @param package - instance of PackageBaseFile
+
+        """
         result = False
         if package.is_source():
             result = True
@@ -98,8 +121,11 @@ class PackageManager(object):
 
     @staticmethod
     def default_proccess_callback(reason, filename, precents=0):
+        """default callback function for installation proccess
+
+        """
         if reason == PKG_INST_START:
-            print("Installing {0}  {1:{2}d}%".format(filename,precents,3),
+            print("Installing {0}  {1:{2}d}%".format(filename, precents, 3),
                   end="")
         elif reason == PKG_INST_PROGRESS:
             print("\b\b\b" + " {0:d}%".format(precents), end="")
@@ -109,11 +135,14 @@ class PackageManager(object):
             print("Uninstalling {0} ".format(filename),
                   end="")
         elif reason == PKG_UNINST_PROGRESS:
-            print("\b\b\b %s" % "{0:{1}d}%".format(precents,3), end="")
+            print("\b\b\b %s" % "{0:{1}d}%".format(precents, 3), end="")
         elif reason == PKG_UNINST_STOP:
             print(" Done!")
 
     def proccess(self, callback=None):
+        """proccess install/upgrade or uninstall packages
+
+        """
 
         if callback is None:
             callback = PackageManager.default_proccess_callback
@@ -126,8 +155,10 @@ class PackageManager(object):
 
         self.system.packager.run(callback)
 
+
     def format_dependencies(self, dependecies):
-        """
+        """help
+
             package_name {
                 'require': [
                     (pack, '>=', ver),
@@ -158,6 +189,9 @@ class PackageManager(object):
         return result
 
     def format_problems(self, problems):
+        """
+
+        """
         result = "Following problems occurred with packages:\n"
         package_indent = " " * 5
         problem_indent = package_indent * 5

@@ -12,8 +12,8 @@ __author__ = 'pussbb'
 __AVAILABLE = True
 
 import os
-
 import sys
+
 if sys.version_info[0] < 3:
     import imp
     imp.reload(sys)
@@ -30,10 +30,11 @@ try:
     import rpm
 except ImportError as exception:
     __AVAILABLE = False
-rpm.setVerbosity(False)
-_ts = rpm.ts()
-_ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
-#_ts.initDB()
+
+rpm.setVerbosity(-3)
+_TS = rpm.ts()
+_TS.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
+
 
 class RpmFile(PackageBaseFile):
 
@@ -44,7 +45,7 @@ class RpmFile(PackageBaseFile):
         self.header = None
         fdno = os.open(rpm_file, os.O_RDONLY)
         try:
-            self.header = _ts.hdrFromFdno(fdno)
+            self.header = _TS.hdrFromFdno(fdno)
         except rpm.error as exception:
             pass
         finally:
@@ -113,13 +114,13 @@ class RpmFile(PackageBaseFile):
 
     @property
     def installed(self):
-        return len(_ts.dbMatch('name', self.name)) > 0
+        return len(_TS.dbMatch('name', self.name)) > 0
 
     @property
     def upgradable(self):
         if not self.installed:
             return False
-        inst_h = _ts.dbMatch('name', self.name)[0]
+        inst_h = _TS.dbMatch('name', self.name)[0]
         return inst_h.dsOfHeader().EVR() > self.header.dsOfHeader().EVR()
 
 
@@ -137,8 +138,8 @@ class RpmPackage(PackageBase):
         if len(args) == 1 and isinstance(args[0], list):
             args = args[0]
         for package in args:
-            mi = _ts.dbMatch('name', package.name)
-            _ts.addErase(*mi)
+            mi = _TS.dbMatch('name', package.name)
+            _TS.addErase(*mi)
 
     def __package_instalation_data(self, package):
         key = 'i'
@@ -150,7 +151,7 @@ class RpmPackage(PackageBase):
         if len(args) == 1 and isinstance(args[0], list):
             args = args[0]
         for package in args:
-            _ts.addInstall(*self.__package_instalation_data(package))
+            _TS.addInstall(*self.__package_instalation_data(package))
 
     @staticmethod
     def parse_need_flag(mask):
@@ -241,20 +242,20 @@ class RpmPackage(PackageBase):
         return result
 
     def clear(self):
-        _ts.clean()
+        _TS.clean()
         try:
-            _ts.clear()
+            _TS.clear()
         except AttributeError as exception:
             pass
 
     def check(self):
-        dependecies = _ts.check()
+        dependecies = _TS.check()
 
         if dependecies:
             raise ScalixUnresolvedDependencies(
                 self.__parse_dependencies(dependecies))
 
-        problems = _ts.problems()
+        problems = _TS.problems()
         if problems:
             raise ScalixPackageProblems(self.__parse_problems(problems))
 
@@ -308,10 +309,10 @@ class RpmPackage(PackageBase):
         #TODO write exceptions
 
         self.check()
-        _ts.order()
-        _ts.run(self.run_callback, callback)
+        _TS.order()
+        _TS.run(self.run_callback, callback)
         self.clear()
-        #_ts.test(self.runCallback, 1)
+        #_TS.test(self.runCallback, 1)
 
 
 RPM = RpmPackage(__AVAILABLE, 'rpm')

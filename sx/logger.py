@@ -11,6 +11,7 @@ __author__ = 'pussbb'
 
 import logging
 import time
+import os
 
 import sx.utils
 
@@ -22,11 +23,15 @@ LOG_FILENAME_FORMAT = "{filename}.{0}-{1}-{2}.{3}-{4}-{5}.log"
 LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 LOGGER = None
 
-def create_logger(name, debug=False, filename='scalix-installer',
+def create_logger(name, debug_mode=False, filename='scalix-installer',
                  directory=None):
+    """create logging instance
 
+    @return logging instance
+
+    """
     logger = logging.getLogger(name)
-    if debug:
+    if debug_mode:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
@@ -42,9 +47,37 @@ def create_logger(name, debug=False, filename='scalix-installer',
     return logger
 
 def is_debug():
+    """ if debug mode enabled
+
+    """
     return LOGGER.isEnabledFor(logging.DEBUG)
 
+def logger_handler():
+    """returns default loging handler
+
+    """
+    return LOGGER.handlers[0]
+
+def logger_stream():
+    """returns stream for a default loging handler
+
+    """
+    return logger_handler().stream
+
+def logger_filename(base_name=True):
+    """ returns a log file name or full path to that file
+
+    """
+    filename = logger_handler().baseFilename
+    if base_name:
+        filename = os.path.basename(filename)
+    return filename
+
 def logger_wrapper(func):
+    """ helper wrapper if debug mode is on it will also output massage into
+    stdout
+
+    """
     def real_wrapper(*args, **kwargs):
         list_ = []
         debug_mode = is_debug()
@@ -61,24 +94,39 @@ def logger_wrapper(func):
     return real_wrapper
 
 @logger_wrapper
-def debug(message):
+def debug(*args):
+    """write massge to log file with DEBUG level
+
+    """
     if not is_debug():
         return
-    LOGGER.info(message)
+    LOGGER.info(*args)
 
 @logger_wrapper
-def info(message):
-    LOGGER.info(message)
+def info(*args):
+    """write massge to log file with INFO level
+
+    """
+    LOGGER.info(*args)
 
 @logger_wrapper
-def warning(message):
-    LOGGER.warning(message)
+def warning(*args):
+    """write massge to log file with WARNING level
+
+    """
+    LOGGER.warning(*args)
 
 @logger_wrapper
-def error(message):
-    LOGGER.error(message)
+def error(*args):
+    """write massge to log file with ERROR level
+
+    """
+    LOGGER.error(*args)
 
 @logger_wrapper
-def critical(message):
-    LOGGER.critical(message)
+def critical(*args):
+    """write massge to log file with CRITICAL level
+
+    """
+    LOGGER.critical(*args)
 

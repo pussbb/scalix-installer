@@ -4,6 +4,9 @@ from distutils.version import StrictVersion
 from sx.exceptions import ScalixPackageException
 
 class PackageBase(object):
+    """Base class to manipulate with set of packages
+
+    """
 
     def __init__(self, available, file_extention):
         self.__available = available
@@ -35,13 +38,16 @@ class PackageBase(object):
     def check(self):
         raise NotImplementedError()
 
-    def run(self):
+    def run(self, callback):
         raise NotImplementedError()
 
     def clear(self):
         raise  NotImplementedError()
 
 class PackageBaseFile(object):
+    """Base class to get information about package
+
+    """
 
     def __init__(self):
         self.__install = False
