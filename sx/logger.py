@@ -30,6 +30,7 @@ def create_logger(name, debug_mode=False, filename='scalix-installer',
     @return logging instance
 
     """
+
     logger = logging.getLogger(name)
     if debug_mode:
         logger.setLevel(logging.DEBUG)

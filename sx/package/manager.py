@@ -10,6 +10,7 @@ from __future__ import print_function, unicode_literals, with_statement, \
 __author__ = 'pussbb'
 
 import os
+import sys
 
 from sx.package.base.deb import DEB
 from sx.package.base.rpm import RPM
@@ -124,18 +125,17 @@ class PackageManager(object):
         """default callback function for installation proccess
 
         """
+
         if reason == PKG_INST_START:
-            print("Installing {0}  {1:{2}d}%".format(filename, precents, 3),
-                  end="")
+            print("Installing {0}     ".format(filename))
         elif reason == PKG_INST_PROGRESS:
-            print("\b\b\b" + " {0:d}%".format(precents), end="")
+            print("\b\b\b%d%s" % (precents, '%'), end="")
         elif reason == PKG_INST_STOP:
             print(" Done!")
         elif reason == PKG_UNINST_START:
-            print("Uninstalling {0} ".format(filename),
-                  end="")
+            print("Uninstalling {0} ".format(filename), end=" ")
         elif reason == PKG_UNINST_PROGRESS:
-            print("\b\b\b %s" % "{0:{1}d}%".format(precents, 3), end="")
+            print("\b\b\b%d%s" % (precents, '%'), end=" ")
         elif reason == PKG_UNINST_STOP:
             print(" Done!")
 

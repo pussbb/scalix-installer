@@ -13,6 +13,7 @@ __AVAILABLE = True
 
 import os
 import sys
+#from cStringIO import StringIO
 
 if sys.version_info[0] < 3:
     import imp
@@ -31,7 +32,7 @@ try:
 except ImportError as exception:
     __AVAILABLE = False
 
-rpm.setVerbosity(-3)
+rpm.setVerbosity(0)
 _TS = rpm.ts()
 _TS.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
 
@@ -169,7 +170,7 @@ class RpmPackage(PackageBase):
         result = {}
 
         for dep in dependecies:
-            package, unresolved, needs_flags, suggested_package, sense = dep
+            package, unresolved, needs_flags, _, sense = dep
             if package[0] not in result:
                 result[package[0]] = {
                     'require': [],
@@ -274,13 +275,11 @@ class RpmPackage(PackageBase):
         logger.debug("run call back data", reason, amount, total, key,
                      callback)
         if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
-            logger.debug("Opening file.", key)
             basename = os.path.basename(key)
             RpmPackage.filename = '-'.join(basename.split('-')[:2])
             RpmPackage.fd = os.open(key, os.O_RDONLY)
             return RpmPackage.fd
         elif reason == rpm.RPMCALLBACK_INST_CLOSE_FILE:
-            logger.debug("Closing file. ", key)
             os.close(RpmPackage.fd)
         elif reason == rpm.RPMCALLBACK_INST_PROGRESS:
             complete_percents = amount*100//total
@@ -288,28 +287,23 @@ class RpmPackage(PackageBase):
             #hack on centos 6.4 rpm doesn't have RPMCALLBACK_INST_STOP
             if amount == total:
                 callback(PKG_INST_STOP, RpmPackage.filename)
-            logger.debug("install progress")
         #elif reason == rpm.RPMCALLBACK_INST_STOP:
         #    logger.degug("instaltion stop")
         elif reason == rpm.RPMCALLBACK_INST_START:
             callback(PKG_INST_START, RpmPackage.filename)
-            logger.debug("instaltion start")
-
         elif reason == rpm.RPMCALLBACK_UNINST_START:
             callback(PKG_UNINST_START, key)
-            logger.debug("uninstall start")
         elif reason == rpm.RPMCALLBACK_UNINST_PROGRESS:
             callback(PKG_INST_PROGRESS, key, amount*100//total)
-            logger.debug("uninsatll progress")
         elif reason == rpm.RPMCALLBACK_UNINST_STOP:
             callback(PKG_UNINST_STOP, key)
-            logger.debug("uninstaltion stop")
 
     def run(self, callback):
         #TODO write exceptions
 
         self.check()
         _TS.order()
+        rpm.setLogFile(logger.logger_stream())
         _TS.run(self.run_callback, callback)
         self.clear()
         #_TS.test(self.runCallback, 1)

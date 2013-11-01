@@ -383,7 +383,12 @@ class System(object):
         return machine ip or localhost ip
 
         """
-        ip_list = socket.gethostbyaddr(System.get_fqdn())[2]
+        try:
+            ip_list = socket.gethostbyaddr(System.get_fqdn())[2]
+        except socket.gaierror as exception:
+            logger.critical(exception)
+            return '127.0.0.1'
+
         if ip_list:
             return ip_list[0]
         return '127.0.0.1'

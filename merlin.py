@@ -80,7 +80,7 @@ def init_logger(args):
 
     logger.info("Initializing Installer version", version.get_version(),
                 output=True)
-    logger.info("Using log file", logger.logger_filename())
+    logger.info("Using log file", logger.logger_filename(), output=True)
 
 def main(args, system):
 
@@ -108,8 +108,10 @@ if __name__ == '__main__':
 
     try:
         #main(ARGS, system)
-        system_tests(system)
-        #package_manager_test(system)
+        #system_tests(system)
+        package_manager_test(system)
+    except:
+        raise
     finally:
         if logger.is_debug():
             os.remove(logger.logger_filename(base_name=False))
