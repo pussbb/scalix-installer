@@ -22,7 +22,7 @@ if sys.version_info[0] < 3:
 
 from sx.package.base import PackageBase, PackageBaseFile
 from sx.exceptions import ScalixUnresolvedDependencies, ScalixPackageProblems
-import sx.logger as logger
+import sx.logger
 from sx.package import *
 
 __all__ = ["RPM"]
@@ -272,7 +272,7 @@ class RpmPackage(PackageBase):
         return [te.N() for te in ts]
 
     def run_callback(self, reason, amount, total, key, callback):
-        logger.debug("run call back data", reason, amount, total, key,
+        sx.logger.debug("run call back data", reason, amount, total, key,
                      callback)
         if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
             basename = os.path.basename(key)
@@ -303,7 +303,7 @@ class RpmPackage(PackageBase):
 
         self.check()
         _TS.order()
-        rpm.setLogFile(logger.logger_stream())
+        rpm.setLogFile(sx.logger.logger_stream())
         _TS.run(self.run_callback, callback)
         self.clear()
         #_TS.test(self.runCallback, 1)

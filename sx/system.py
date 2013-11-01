@@ -385,7 +385,7 @@ class System(object):
         """
         try:
             ip_list = socket.gethostbyaddr(System.get_fqdn())[2]
-        except socket.gaierror as exception:
+        except socket.error as exception:
             logger.critical(exception)
             return '127.0.0.1'
 
