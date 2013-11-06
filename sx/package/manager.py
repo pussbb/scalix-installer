@@ -84,7 +84,7 @@ class PackageManager(object):
     def package_for_arch(self, package):
         """checks if  package for platform
 
-        @param package - instance of PackageBaseFile
+        @param package - instance of AbstractPackageFile
 
         """
         result = False

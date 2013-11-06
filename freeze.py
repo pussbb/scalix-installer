@@ -6,7 +6,7 @@ system = System()
 include = (
     "sx",
     '__future__',
-    'rpm',
+    #'rpm',
     'os',
     'sys',
     'distutils',
@@ -22,5 +22,5 @@ include = (
 )
 f = Freezer("merlin.%s" % system.arch , includes=include)
 f.addScript("merlin.py")
-
+f.addModule('rpm')
 f()

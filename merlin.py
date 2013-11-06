@@ -98,6 +98,7 @@ def main(args, system):
     if args["--hostname"]:
         os.environ["OMHOSTNAME"] = args["--hostname"]
 
+
 if __name__ == '__main__':
     from docopt import docopt
 
@@ -107,7 +108,7 @@ if __name__ == '__main__':
     logger.info('Running on:\n', system, output=True)
 
     try:
-        #main(ARGS, system)
+        main(ARGS, system)
         #system_tests(system)
         package_manager_test(system)
     except:

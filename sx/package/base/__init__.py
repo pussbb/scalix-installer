@@ -3,7 +3,7 @@ __author__ = 'pussbb'
 from distutils.version import StrictVersion
 from sx.exceptions import ScalixPackageException
 
-class PackageBase(object):
+class AbstractPackagerBase(object):
     """Base class to manipulate with set of packages
 
     """
@@ -44,7 +44,7 @@ class PackageBase(object):
     def clear(self):
         raise  NotImplementedError()
 
-class PackageBaseFile(object):
+class AbstractPackageFile(object):
     """Base class to get information about package
 
     """

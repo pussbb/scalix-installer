@@ -16,9 +16,9 @@ try:
 except ImportError as exception:
     __AVAILABLE = False
 
-from sx.package.base import PackageBase, PackageBaseFile
+from sx.package.base import AbstractPackagerBase, AbstractPackageFile
 
-class DebFile(PackageBaseFile):
+class DebFile(AbstractPackageFile):
 
     @property
     def requires(self):
@@ -81,27 +81,27 @@ class DebFile(PackageBaseFile):
         self.file = deb_file
         pass
 
-class DebPackage(PackageBase):
+class DebPackager(AbstractPackagerBase):
 
     def add(self, *args):
-        return super(DebPackage, self).add(*args)
+        return super(DebPackager, self).add(*args)
 
     def check(self):
-        return super(DebPackage, self).check()
+        return super(DebPackager, self).check()
 
     def order(self, packages):
-        return super(DebPackage, self).order(packages)
+        return super(DebPackager, self).order(packages)
 
     def uninstall(self, *args):
-        return super(DebPackage, self).uninstall(*args)
+        return super(DebPackager, self).uninstall(*args)
 
     def run(self, callback):
-        return super(DebPackage, self).run(callback)
+        return super(DebPackager, self).run(callback)
 
     def clear(self):
-        return super(DebPackage, self).clear()
+        return super(DebPackager, self).clear()
 
     def package(self, *args, **kwargs):
         return DebFile(*args, **kwargs)
 
-DEB = DebPackage(__AVAILABLE, 'deb')
+DEB = DebPackager(__AVAILABLE, 'deb')

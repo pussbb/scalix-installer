@@ -20,7 +20,7 @@ if sys.version_info[0] < 3:
     imp.reload(sys)
     sys.setdefaultencoding("UTF-8")
 
-from sx.package.base import PackageBase, PackageBaseFile
+from sx.package.base import AbstractPackagerBase, AbstractPackageFile
 from sx.exceptions import ScalixUnresolvedDependencies, ScalixPackageProblems
 import sx.logger
 from sx.package import *
@@ -37,11 +37,11 @@ _TS = rpm.ts()
 _TS.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
 
 
-class RpmFile(PackageBaseFile):
+class RpmFile(AbstractPackageFile):
 
     def __init__(self, rpm_file):
-        #super(PackageBaseFile, self).__init__()
-        PackageBaseFile.__init__(self)
+        #super(AbstractPackageFile, self).__init__()
+        AbstractPackageFile.__init__(self)
         self.file = rpm_file
         self.header = None
         fdno = os.open(rpm_file, os.O_RDONLY)
@@ -125,7 +125,7 @@ class RpmFile(PackageBaseFile):
         return inst_h.dsOfHeader().EVR() > self.header.dsOfHeader().EVR()
 
 
-class RpmPackage(PackageBase):
+class RpmPackager(AbstractPackagerBase):
 
     """ file descriptor for run runCallback
     """
@@ -178,7 +178,7 @@ class RpmPackage(PackageBase):
                 }
             data = (
                 unresolved[0],
-                RpmPackage.parse_need_flag(needs_flags),
+                RpmPackager.parse_need_flag(needs_flags),
                 unresolved[1]
             )
             if sense is rpm.RPMDEP_SENSE_CONFLICTS:
@@ -237,7 +237,7 @@ class RpmPackage(PackageBase):
         for problem in problems:
             if not result.get(problem.pkgNEVR):
                 result[problem.pkgNEVR] = []
-            item = " {0} {1}".format(RpmPackage.prob_flag_format(problem.type),
+            item = " {0} {1}".format(RpmPackager.prob_flag_format(problem.type),
                                      problem.altNEVR )
             result[problem.pkgNEVR].append(item)
         return result
@@ -276,21 +276,21 @@ class RpmPackage(PackageBase):
                      callback)
         if reason == rpm.RPMCALLBACK_INST_OPEN_FILE:
             basename = os.path.basename(key)
-            RpmPackage.filename = '-'.join(basename.split('-')[:2])
-            RpmPackage.fd = os.open(key, os.O_RDONLY)
-            return RpmPackage.fd
+            RpmPackager.filename = '-'.join(basename.split('-')[:2])
+            RpmPackager.fd = os.open(key, os.O_RDONLY)
+            return RpmPackager.fd
         elif reason == rpm.RPMCALLBACK_INST_CLOSE_FILE:
-            os.close(RpmPackage.fd)
+            os.close(RpmPackager.fd)
         elif reason == rpm.RPMCALLBACK_INST_PROGRESS:
             complete_percents = amount*100//total
-            callback(PKG_INST_PROGRESS, RpmPackage.filename, complete_percents)
+            callback(PKG_INST_PROGRESS, RpmPackager.filename, complete_percents)
             #hack on centos 6.4 rpm doesn't have RPMCALLBACK_INST_STOP
             if amount == total:
-                callback(PKG_INST_STOP, RpmPackage.filename)
+                callback(PKG_INST_STOP, RpmPackager.filename)
         #elif reason == rpm.RPMCALLBACK_INST_STOP:
         #    logger.degug("instaltion stop")
         elif reason == rpm.RPMCALLBACK_INST_START:
-            callback(PKG_INST_START, RpmPackage.filename)
+            callback(PKG_INST_START, RpmPackager.filename)
         elif reason == rpm.RPMCALLBACK_UNINST_START:
             callback(PKG_UNINST_START, key)
         elif reason == rpm.RPMCALLBACK_UNINST_PROGRESS:
@@ -309,7 +309,7 @@ class RpmPackage(PackageBase):
         #_TS.test(self.runCallback, 1)
 
 
-RPM = RpmPackage(__AVAILABLE, 'rpm')
+RPM = RpmPackager(__AVAILABLE, 'rpm')
 
 """
 RPMCALLBACK_INST_CLOSE_FILE = 8
