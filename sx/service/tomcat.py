@@ -14,5 +14,5 @@ from sx.service import AbstractService
 
 class ScalixTomcatService(AbstractService):
 
-    def __init__(self, name):
-        super(AbstractService, self).__init__("scalix-tomcat")
+    def __init__(self, name=None):
+        AbstractService.__init__(self, "scalix-tomcat")
