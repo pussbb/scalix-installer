@@ -21,6 +21,7 @@ import sx.logger as logger
 
 from sx.package.base.rpm import RPM
 from sx.package.base.deb import DEB
+from sx.service.manager import DebServiceManager
 
 UNAME_KEYS = [
     'system',
@@ -47,11 +48,11 @@ Supported platforms item's descripton
 SUPPORTED_PLATFORMS = (
     ('CentOS', '6', 'Final', ['x86_64', 'i686'], 'rhel6', RPM),
 
-    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM), # '???', DEB
+    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager()), # '???', DEB
 )
 
 class System(object):
-    """General class to get information obout system on which script is running
+    """General class to get information about system on which script is running
 
     """
 
@@ -60,6 +61,7 @@ class System(object):
         self.__supported = False
         self.packager = None
         self.target_platform = None
+        self.service_manager = None
 
         if not self.is_linux():
             return
@@ -76,9 +78,9 @@ class System(object):
         extra_data = self.__get_extra_data_if_supported()
         if extra_data:
             self.__supported = True
-            self.packager = extra_data[-1]
-            self.target_platform = extra_data[-2]
-
+            self.service_manager = extra_data[-1]
+            self.packager = extra_data[-2]
+            self.target_platform = extra_data[-3]
 
 
     def __repr__(self):

@@ -34,6 +34,14 @@ import sx.logger as logger
 from sx.system import System
 from sx.package.manager import PackageManager
 
+def service_test(system):
+    print(system.service_manager.available())
+    apache_service = system.service_manager.apache
+    print(apache_service.exists)
+    print(apache_service.commands)
+    #print(apache_service('restart'))
+    print(apache_service.is_running())
+
 def package_manager_test(system):
 
     pm = PackageManager(system)
@@ -108,9 +116,10 @@ if __name__ == '__main__':
     logger.info('Running on:\n', system, output=True)
 
     try:
-        main(ARGS, system)
+        #main(ARGS, system)
         #system_tests(system)
-        package_manager_test(system)
+        #package_manager_test(system)
+        service_test(system)
     except:
         raise
     finally:

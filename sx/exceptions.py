@@ -84,7 +84,7 @@ class ScalixExternalCommand(ScalixException):
                   " (command: {cmd})\n With message:\n {msg} \n"\
             .format(cmd=command, code=exit_code, msg=stderr or stdout)
 
-        ScalixException.__init__(self)
+        ScalixException.__init__(self, self.message)
         self.command = command
         self.stdout = stdout
         self.stderr = stderr
