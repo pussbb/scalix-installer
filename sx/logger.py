@@ -51,7 +51,7 @@ def is_debug():
     """ if debug mode enabled
 
     """
-    return LOGGER and LOGGER.isEnabledFor(logging.DEBUG)
+    return LOGGER.isEnabledFor(logging.DEBUG)
 
 def logger_handler():
     """returns default loging handler
