@@ -10,7 +10,6 @@ from __future__ import print_function, unicode_literals, with_statement, \
 __author__ = 'pussbb'
 
 import os
-import sys
 
 from sx.package.base.deb import DEB
 from sx.package.base.rpm import RPM
@@ -30,7 +29,7 @@ class PackageManager(object):
         self.packages_dict = {}
 
     @staticmethod
-    def available_drivers(self):
+    def available_drivers():
         """returns list of available drivers
 
         """
@@ -181,10 +180,10 @@ class PackageManager(object):
                 message += " {0} ({1})".format( package.version, package.arch)
                 arch_string = " ( needs by {0} package) ".format(package.arch)
             message += ' has following unresolved dependencies :\n'
-            for type, type_data in data.items():
+            for type_, type_data in data.items():
                 for dep in type_data:
                     message += "{0} ({1}) {3} {4} {5} {2}\n"\
-                        .format(dep_indent, type, arch_string, *dep)
+                        .format(dep_indent, type_, arch_string, *dep)
             result += message
         return result
 

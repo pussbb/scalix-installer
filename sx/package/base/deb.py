@@ -20,6 +20,9 @@ from sx.package.base import AbstractPackagerBase, AbstractPackageFile
 
 class DebFile(AbstractPackageFile):
 
+    def is_source(self):
+        return super(DebFile, self).is_source()
+
     @property
     def requires(self):
         return super(DebFile, self).requires()

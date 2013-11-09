@@ -17,13 +17,6 @@ if sys.version_info[0] < 3:
     imp.reload(sys)
     sys.setdefaultencoding("UTF-8")
 
-#basestring in python 3 not defined
-#try:
-#    unicode = unicode
-#except NameError:
-#    unicode = str
-#    basestring = (str, bytes)
-
 import subprocess
 import pipes
 

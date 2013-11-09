@@ -32,24 +32,22 @@ UNAME_KEYS = [
     'processor'
 ]
 
-"""
-Supported platforms item's descripton
-(
-    'CentOS', # distro name
-    '6', # version if needed specify concrete version just do it. e.g. 'Ubuntu'
-    'Final', # distro abbreviation
-    'x86_64', #platfrom architecture 32bit's or 64 bit's
-    'rhel6' # packages release abbreviation
-    'rpm' # system package manager
-)
-
-"""
-
+#: Supported platforms item's description
+#: (
+#:    'CentOS', # distro name
+#:    '6', # version if needed specify concrete version just do it.
+#:    'Final', # distro abbreviation
+#:    'x86_64', #platfrom architecture 32bit's or 64 bit's
+#:    'rhel6' # packages release abbreviation
+#:    'rpm' # system package manager
+#: )
+#: @type: tuple
 SUPPORTED_PLATFORMS = (
     ('CentOS', '6', 'Final', ['x86_64', 'i686'], 'rhel6', RPM),
 
-    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager()), # '???', DEB
+    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager()),
 )
+
 
 class System(object):
     """General class to get information about system on which script is running
