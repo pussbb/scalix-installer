@@ -21,7 +21,8 @@ __all__ = ["LOGGER", "info", "warning", "error", "critical", "debug",
 #{filename}.{tm_year}-{tm_mon}-{tm_mday}.{tm_hour}-{tm_min}-{tm_sec}.log
 LOG_FILENAME_FORMAT = "{filename}.{0}-{1}-{2}.{3}-{4}-{5}.log"
 LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
-LOGGER = None
+
+LOGGER = logging.getLogger(__name__)
 
 def create_logger(name, debug_mode=False, filename='scalix-installer',
                  directory=None):
@@ -30,8 +31,7 @@ def create_logger(name, debug_mode=False, filename='scalix-installer',
     @return logging instance
 
     """
-
-    logger = logging.getLogger(name)
+    logger = logging.getLogger(__name__)
     if debug_mode:
         logger.setLevel(logging.DEBUG)
     else:
