@@ -75,7 +75,7 @@ class ScalixPackageProblems(ScalixPackageException):
         self.problems = problems
 
 
-class ScalixExternalCommand(ScalixException):
+class ScalixExternalCommandException(ScalixException):
     """Base exception class for executing external commands in shell
 
     """
@@ -92,13 +92,13 @@ class ScalixExternalCommand(ScalixException):
 
 
 
-class ScalixExternalCommandNotFound(ScalixExternalCommand):
+class ScalixExternalCommandNotFound(ScalixExternalCommandException):
     """Command not found
 
     """
     pass
 
-class ScalixExternalCommandFailed(ScalixExternalCommand):
+class ScalixExternalCommandFailed(ScalixExternalCommandException):
     """
     Raised by :py:func:`execute()` when an external command returns with a
     nonzero exit code.

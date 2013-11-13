@@ -24,18 +24,17 @@ LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 
 LOGGER = logging.getLogger(__name__)
 
-def create_logger(name, debug_mode=False, filename='scalix-installer',
+def init_logger(name, debug_mode=False, filename='scalix-installer',
                  directory=None):
     """create logging instance
 
-    @return logging instance
-
     """
-    logger = logging.getLogger(__name__)
+    global LOGGER
+    del LOGGER.handlers[:]
     if debug_mode:
-        logger.setLevel(logging.DEBUG)
+        LOGGER.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.INFO)
+        LOGGER.setLevel(logging.INFO)
     if not filename:
         filename = name
     filename = LOG_FILENAME_FORMAT\
@@ -44,8 +43,10 @@ def create_logger(name, debug_mode=False, filename='scalix-installer',
     handler = logging.FileHandler(filename)
     formatter = logging.Formatter(LOG_FORMATTER_FORMAT)
     handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    return logger
+    LOGGER.addHandler(handler)
+
+if not LOGGER.handlers and hasattr(logging, 'NullHandler'):
+    LOGGER.addHandler(logging.NullHandler())
 
 def is_debug():
     """ if debug mode enabled

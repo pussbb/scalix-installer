@@ -21,7 +21,7 @@ import subprocess
 import pipes
 
 from sx.exceptions import ScalixExternalCommandFailed, \
-    ScalixExternalCommandNotFound
+    ScalixExternalCommandNotFound, ScalixExternalCommandException
 import sx.logger as logger
 
 def current_directory():
@@ -66,6 +66,21 @@ def properties_from_file(filename, replace_dots=False):
         properties[name] = value
     return properties
 
+
+def command_exists(command):
+    """check if command present in system
+    @param command string name of command
+    @return True or False
+
+    """
+    try:
+        execute(command)
+        return True
+    except ScalixExternalCommandException as exception:
+        logger.warning("Command {0} not found ".format(command), exception)
+        return False
+
+
 BASH_CONDITIONS = (
     "|",
     "||",
@@ -106,12 +121,12 @@ def execute(*args, **kwargs):
         args = args[0]
 
     command = [bash_command(args[0], kwargs.get('with_find', True))]
-
+    escape = kwargs.get('escape', True)
     for item in args[1:]:
         if not item:
             continue
         if item[0] not in ["'", "\"", "$"] and \
-            item not in BASH_CONDITIONS :
+            item not in BASH_CONDITIONS and escape:
             item = pipes.quote(item)
         command.append(item)
 

@@ -16,12 +16,12 @@ import socket
 import re
 
 from sx import utils
-from sx.exceptions import ScalixExternalCommand, ScalixExternalCommandNotFound
+from sx.exceptions import ScalixExternalCommandException
 import sx.logger as logger
 
 from sx.package.base.rpm import RPM
 from sx.package.base.deb import DEB
-from sx.service.manager import DebServiceManager
+from sx.service.manager import DebServiceManager, RHELServiceManager
 
 UNAME_KEYS = [
     'system',
@@ -43,9 +43,9 @@ UNAME_KEYS = [
 #: )
 #: @type: tuple
 SUPPORTED_PLATFORMS = (
-    ('CentOS', '6', 'Final', ['x86_64', 'i686'], 'rhel6', RPM),
+    ('CentOS', '6', 'Final', ['x86_64', 'i686'], 'rhel6', RPM, RHELServiceManager),
 
-    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager()),
+    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager),
 )
 
 
@@ -76,7 +76,7 @@ class System(object):
         extra_data = self.__get_extra_data_if_supported()
         if extra_data:
             self.__supported = True
-            self.service_manager = extra_data[-1]
+            self.service_manager = extra_data[-1]()
             self.packager = extra_data[-2]
             self.target_platform = extra_data[-3]
 
@@ -143,20 +143,6 @@ class System(object):
         return ()
 
     @staticmethod
-    def command_exists(command):
-        """check if command present in system
-        @param command string name of command
-        @return True or False
-
-        """
-        try:
-            utils.execute(command, with_find=False)
-            return True
-        except ScalixExternalCommandNotFound as exception:
-            logger.warning("Command {0} not found ".format(command), exception)
-            return False
-
-    @staticmethod
     def run_level():
         """Returns run level on linux
 
@@ -167,7 +153,7 @@ class System(object):
         try:
             cmd = ["runlevel", "|", utils.bash_command("gawk"), "'{print $2}'"]
             return int(utils.execute(cmd)[0])
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.critical("Could not get run level", exception)
             return -1
 
@@ -184,7 +170,7 @@ class System(object):
             result = utils.execute("gawk", "'/MemTotal/ { print $2 }'",
                                "/proc/meminfo")
             return int(result[0])
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.critical("Could not get total memory", exception)
             return -1
 
@@ -199,7 +185,7 @@ class System(object):
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
             return int(utils.execute("gawk", "'/MemFree/ { print $2 }'",
                                "/proc/meminfo")[0])
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.critical("Could not get free memory", exception)
             return -1
 
@@ -233,7 +219,7 @@ class System(object):
                 logger.critical("Could not get partition size", exception,
                                 result)
                 return -1
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.critical("Could not get partition size", exception)
             return -1
 
@@ -283,7 +269,7 @@ class System(object):
                                    ":{0:d}[^0-9]".format(port))
             return (i for i in result[0].strip().split())
 
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.warning("Could not get port is listening ", exception)
         return ()
 
@@ -326,7 +312,7 @@ class System(object):
                     result.append(match.group(1))
             return result
 
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.warning("Could not get ips ", exception)
             return False
 
@@ -341,7 +327,7 @@ class System(object):
         try:
             lines = utils.execute("dig", "-t", "MX", "+short", domain)
             return [i.strip() for i in lines]
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.warning("Could not get MX records ", exception)
             return False
 
@@ -360,7 +346,7 @@ class System(object):
             version = re.search(r'^java version "(.*)"$', lines[0].strip())
             if version:
                 return version.group(0)
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.warning("Could not get java version", exception)
 
     @staticmethod
@@ -410,5 +396,5 @@ class System(object):
             if lines:
                 return lines[0].strip()
 
-        except ScalixExternalCommand as exception:
+        except ScalixExternalCommandException as exception:
             logger.warning("Could not determine interface", exception)

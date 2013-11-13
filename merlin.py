@@ -39,8 +39,14 @@ def service_test(system):
     apache_service = system.service_manager.apache
     print(apache_service.exists)
     print(apache_service.commands)
-    #print(apache_service('restart'))
+    print(apache_service('restart'))
     print(apache_service.is_running())
+    print(apache_service.run_levels())
+    print(system.service_manager.enable(apache_service))
+    print(apache_service.run_levels())
+    print(system.service_manager.disable(apache_service))
+    print(apache_service.run_levels())
+
 
 def package_manager_test(system):
 
@@ -66,7 +72,7 @@ def package_manager_test(system):
     #print(repr(pm))
 
 def system_tests(system):
-    print(System.command_exists('wipe'))
+    #print(System.command_exists('wipe'))
     print(System.determine_interface(System.determine_ip()))
     print(System.determine_ip())
     print(System.get_java_version())
@@ -83,7 +89,7 @@ def system_tests(system):
     #print(System.open_url('http://python.org/'))
 
 def init_logger(args):
-    logger.LOGGER = logger.create_logger('Merlin', directory=args['--logdir'],
+    logger.init_logger('Merlin', directory=args['--logdir'],
                                          debug_mode=args['--debug'])
 
     logger.info("Initializing Installer version", version.get_version(),
