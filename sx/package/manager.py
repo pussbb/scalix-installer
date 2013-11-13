@@ -169,7 +169,7 @@ class PackageManager(object):
                 ]
             }
         """
-        result = "Following dependecies could not resolve:\n"
+        result = "Following dependencies could not resolve:\n"
         package_indent = " " * 5
         dep_indent = package_indent * 5
         for package_name, data in dependecies.items():
@@ -187,7 +187,8 @@ class PackageManager(object):
             result += message
         return result
 
-    def format_problems(self, problems):
+    @staticmethod
+    def format_problems(problems):
         """
 
         """

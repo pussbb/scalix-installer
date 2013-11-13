@@ -23,6 +23,7 @@ LOG_FILENAME_FORMAT = "{filename}.{0}-{1}-{2}.{3}-{4}-{5}.log"
 LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 
 LOGGER = logging.getLogger(__name__)
+LOGGER.propagate = False
 
 def init_logger(name, debug_mode=False, filename='scalix-installer',
                  directory=None):
