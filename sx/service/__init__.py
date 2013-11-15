@@ -111,8 +111,7 @@ class AbstractService(object):
                 # (run 'chkconfig --add httpd')
                 pass
         else:
-            cmd = [ 'ls', '-1',
-                    '/etc/rc?.d/*{0}'.format(self.name)]
+            cmd = [ 'ls', '-1', '/etc/rc?.d/*{0}'.format(self.name)]
             lines = utils.execute(cmd, escape=False)
             levels = [line[7] for line in lines]
         return levels
