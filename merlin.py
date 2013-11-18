@@ -27,6 +27,10 @@ __author__ = 'pussbb'
 
 import os
 
+import sys
+sys.path.append(os.path.dirname(__file__))
+
+
 from sx.exceptions import ScalixException, ScalixPackageException, \
     ScalixUnresolvedDependencies, ScalixPackageProblems
 import sx.version as version
@@ -73,19 +77,19 @@ def package_manager_test(system):
 
 def system_tests(system):
     #print(System.command_exists('wipe'))
-    print(System.determine_interface(System.determine_ip()))
-    print(System.determine_ip())
+    print(system.determine_interface(System.determine_ip()))
+    print(system.determine_ip())
     print(System.get_java_version())
     print(System.is_ibm_j2sdk())
-    print(System.get_mx_records('allwebsuite.com'))
-    print(System.get_ips())
+    print(system.get_mx_records('allwebsuite.com'))
+    print(system.get_ips())
     print(System.get_fqdn())
     print(System.is_fqdn())
-    print(*System.listening_port(80))
+    print(*system.listening_port(80))
     print("supported", system.is_supported())
-    print("run level", System.run_level())
-    print("Memory (total, free)", System.memory())
-    print(System.disk_space('/', '/opt'))
+    print("run level", system.run_level())
+    print("Memory (total, free)", system.memory())
+    print(system.disk_space('/', '/opt'))
     #print(System.open_url('http://python.org/'))
 
 def init_logger(args):
@@ -123,9 +127,9 @@ if __name__ == '__main__':
 
     try:
         #main(ARGS, system)
-        #system_tests(system)
+        system_tests(system)
         #package_manager_test(system)
-        service_test(system)
+        #service_test(system)
     except:
         raise
     finally:

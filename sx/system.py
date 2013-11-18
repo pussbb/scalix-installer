@@ -16,7 +16,7 @@ import socket
 import re
 
 from sx import utils
-from sx.exceptions import ScalixExternalCommandException
+from sx.exceptions import ScalixExternalCommandException, ScalixException
 import sx.logger as logger
 
 from sx.package.base.rpm import RPM
@@ -48,6 +48,18 @@ SUPPORTED_PLATFORMS = (
     ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager),
 )
 
+def platform_dependency_function(func):
+    def real_wrapper(self, *args, **kwargs):
+        if self.is_linux:
+            return func(self, *args, **kwargs)
+        platform_dict = { 'func': func.__name__, 'platform':self.platform }
+        platform_func = "{func}_{platform}".format(**platform_dict)
+        if hasattr(self, platform_func):
+            return platform_func(self, *args, **kwargs)
+        else:
+            raise ScalixException("Your platform {platform} does not support "
+                                  "function {func}".format(**platform_dict))
+    return real_wrapper
 
 class System(object):
     """General class to get information about system on which script is running
@@ -142,8 +154,8 @@ class System(object):
 
         return ()
 
-    @staticmethod
-    def run_level():
+    @platform_dependency_function
+    def run_level(self):
         """Returns run level on linux
 
         @rtype: int
@@ -157,8 +169,8 @@ class System(object):
             logger.critical("Could not get run level", exception)
             return -1
 
-    @staticmethod
-    def memory_total():
+    @platform_dependency_function
+    def memory_total(self):
         """ get total memory in system(linux only)
 
         @rtype int
@@ -174,8 +186,8 @@ class System(object):
             logger.critical("Could not get total memory", exception)
             return -1
 
-    @staticmethod
-    def memory_free():
+    @platform_dependency_function
+    def memory_free(self):
         """ get free memory in system(linux only)
         @rtype int
         @return total memory or -1 if something went wrong
@@ -189,8 +201,8 @@ class System(object):
             logger.critical("Could not get free memory", exception)
             return -1
 
-    @staticmethod
-    def memory():
+    @platform_dependency_function
+    def memory(self):
         """ get total memory and free memory in system(linux only)
 
         @rtype tuple
@@ -198,10 +210,10 @@ class System(object):
         of this values will be have -1
 
         """
-        return System.memory_total(), System.memory_free()
+        return self.memory_total(), self.memory_free()
 
-    @staticmethod
-    def partition_size(folder):
+    @platform_dependency_function
+    def partition_size(self, folder):
         """ get folder size in system(linux only)
 
         @rtype int
@@ -223,8 +235,8 @@ class System(object):
             logger.critical("Could not get partition size", exception)
             return -1
 
-    @staticmethod
-    def disk_space(*args):
+    @platform_dependency_function
+    def disk_space(self, *args):
         """ get folder size for set of folders in system(linux only)
 
         @rtype list
@@ -233,10 +245,10 @@ class System(object):
 
         """
         if not args:
-            return System.partition_size('/')
+            return self.partition_size('/')
         result = []
         for partition in args:
-            result.append(System.partition_size(partition))
+            result.append(self.partition_size(partition))
         return result
 
     @staticmethod
@@ -253,8 +265,8 @@ class System(object):
             logger.critical("Couldn't open browser", exception, " url ", url)
             return False
 
-    @staticmethod
-    def listening_port(port):
+    @platform_dependency_function
+    def listening_port(self, port):
         """checks if port opened
 
         @param port: port number integer
@@ -289,8 +301,8 @@ class System(object):
         pattern = r'^[a-zA-Z0-9\-\.]+\.([0-9a-zA-Z]+)$'
         return re.match(pattern, System.get_fqdn()) != None
 
-    @staticmethod
-    def get_ips():
+    @platform_dependency_function
+    def get_ips(self):
         """ get ips setted in system local netwoworks which starts with
         127.x.x.x or 192.x.x.x will ignore
 
@@ -316,8 +328,8 @@ class System(object):
             logger.warning("Could not get ips ", exception)
             return False
 
-    @staticmethod
-    def get_mx_records(domain):
+    @platform_dependency_function
+    def get_mx_records(self, domain):
         """ tries to get mx record for domain
 
         @type bool
@@ -379,8 +391,8 @@ class System(object):
             return ip_list[0]
         return '127.0.0.1'
 
-    @staticmethod
-    def determine_interface(ip_str):
+    @platform_dependency_function
+    def determine_interface(self, ip_str):
         """ get network interface on which ip setted
 
         @param ip string
