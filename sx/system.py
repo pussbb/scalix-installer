@@ -48,14 +48,14 @@ SUPPORTED_PLATFORMS = (
     ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager),
 )
 
-def platform_dependency_function(func):
+def platform_depend_function(func):
     def real_wrapper(self, *args, **kwargs):
         if self.is_linux:
             return func(self, *args, **kwargs)
         platform_dict = { 'func': func.__name__, 'platform':self.platform }
         platform_func = "{func}_{platform}".format(**platform_dict)
         if hasattr(self, platform_func):
-            return platform_func(self, *args, **kwargs)
+            return getattr(self, platform_func)(self, *args, **kwargs)
         else:
             raise ScalixException("Your platform {platform} does not support "
                                   "function {func}".format(**platform_dict))
@@ -154,7 +154,7 @@ class System(object):
 
         return ()
 
-    @platform_dependency_function
+    @platform_depend_function
     def run_level(self):
         """Returns run level on linux
 
@@ -169,7 +169,7 @@ class System(object):
             logger.critical("Could not get run level", exception)
             return -1
 
-    @platform_dependency_function
+    @platform_depend_function
     def memory_total(self):
         """ get total memory in system(linux only)
 
@@ -181,12 +181,12 @@ class System(object):
             #gawk '/MemTotal/ { print $2 }' /proc/meminfo
             result = utils.execute("gawk", "'/MemTotal/ { print $2 }'",
                                "/proc/meminfo")
-            return int(result[0])
+            return int(result[0]) * 1024
         except ScalixExternalCommandException as exception:
             logger.critical("Could not get total memory", exception)
             return -1
 
-    @platform_dependency_function
+    @platform_depend_function
     def memory_free(self):
         """ get free memory in system(linux only)
         @rtype int
@@ -195,13 +195,17 @@ class System(object):
         """
         try:
             #"gawk '/MemFree/ { print $2 }' /proc/meminfo"
-            return int(utils.execute("gawk", "'/MemFree/ { print $2 }'",
-                               "/proc/meminfo")[0])
+            cmd = [
+                "gawk",
+                "'/MemFree|Buffers|Cached/ {mem=mem+int($2)} END {print mem}'",
+                "/proc/meminfo"
+            ]
+            return int(utils.execute(cmd)[0]) * 1024
         except ScalixExternalCommandException as exception:
             logger.critical("Could not get free memory", exception)
             return -1
 
-    @platform_dependency_function
+    @platform_depend_function
     def memory(self):
         """ get total memory and free memory in system(linux only)
 
@@ -212,7 +216,7 @@ class System(object):
         """
         return self.memory_total(), self.memory_free()
 
-    @platform_dependency_function
+    @platform_depend_function
     def partition_size(self, folder):
         """ get folder size in system(linux only)
 
@@ -235,7 +239,7 @@ class System(object):
             logger.critical("Could not get partition size", exception)
             return -1
 
-    @platform_dependency_function
+    @platform_depend_function
     def disk_space(self, *args):
         """ get folder size for set of folders in system(linux only)
 
@@ -265,7 +269,7 @@ class System(object):
             logger.critical("Couldn't open browser", exception, " url ", url)
             return False
 
-    @platform_dependency_function
+    @platform_depend_function
     def listening_port(self, port):
         """checks if port opened
 
@@ -301,7 +305,7 @@ class System(object):
         pattern = r'^[a-zA-Z0-9\-\.]+\.([0-9a-zA-Z]+)$'
         return re.match(pattern, System.get_fqdn()) != None
 
-    @platform_dependency_function
+    @platform_depend_function
     def get_ips(self):
         """ get ips setted in system local netwoworks which starts with
         127.x.x.x or 192.x.x.x will ignore
@@ -328,7 +332,7 @@ class System(object):
             logger.warning("Could not get ips ", exception)
             return False
 
-    @platform_dependency_function
+    @platform_depend_function
     def get_mx_records(self, domain):
         """ tries to get mx record for domain
 
@@ -391,7 +395,7 @@ class System(object):
             return ip_list[0]
         return '127.0.0.1'
 
-    @platform_dependency_function
+    @platform_depend_function
     def determine_interface(self, ip_str):
         """ get network interface on which ip setted
 

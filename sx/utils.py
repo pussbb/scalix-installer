@@ -4,7 +4,7 @@
 """
 
 from __future__ import print_function, unicode_literals, with_statement, \
-    absolute_import
+    absolute_import, division
 
 
 __author__ = 'pussbb'
@@ -157,6 +157,39 @@ def execute(*args, **kwargs):
     result = stdout or stderr
 
     return result.strip().split('\n')
+
+__size_symbols = [
+    (1024 ** 5, 'PB'),
+    (1024 ** 4, 'TB'),
+    (1024 ** 3, 'GB'),
+    (1024 ** 2, 'MB'),
+    (1024 ** 1, 'KB'),
+    (1024 ** 0, ('byte', 'bytes')),
+    ]
+
+def size2human(bytes):
+    """Human-readable file size.
+
+    """
+    if bytes <= 0:
+        return bytes
+
+    for factor, suffix in __size_symbols:
+        if bytes >= factor:
+            break
+
+    amount = float(bytes/factor)
+    if isinstance(suffix, tuple):
+        singular, multiple = suffix
+        if amount == 1:
+            suffix = singular
+        else:
+            suffix = multiple
+    formatter_str = "{amount:.2f} {suffix}"
+    if amount == int(amount):
+        formatter_str = "{amount:d} {suffix}"
+    return formatter_str.format(amount=amount, suffix=suffix)
+
 
 if __name__ == "__main__":
     print(execute(["java", "-version"]))

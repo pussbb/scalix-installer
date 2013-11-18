@@ -30,13 +30,13 @@ import os
 import sys
 sys.path.append(os.path.dirname(__file__))
 
-
 from sx.exceptions import ScalixException, ScalixPackageException, \
     ScalixUnresolvedDependencies, ScalixPackageProblems
 import sx.version as version
 import sx.logger as logger
 from sx.system import System
 from sx.package.manager import PackageManager
+from sx import utils
 
 def service_test(system):
     print(system.service_manager.available())
@@ -88,8 +88,9 @@ def system_tests(system):
     print(*system.listening_port(80))
     print("supported", system.is_supported())
     print("run level", system.run_level())
-    print("Memory (total, free)", system.memory())
-    print(system.disk_space('/', '/opt'))
+    mem = system.memory()
+    print("Memory (total, free)", [utils.size2human(i) for i in mem])
+    print([utils.size2human(i) for i in system.disk_space('/', '/opt')])
     #print(System.open_url('http://python.org/'))
 
 def init_logger(args):
