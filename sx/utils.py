@@ -117,7 +117,7 @@ def execute(*args, **kwargs):
     """
 
     # got one argument - list
-    if len(args) == 1 and isinstance(args[0], list):
+    if len(args) == 1 and isinstance(args[0], (list, tuple)):
         args = args[0]
 
     command = [bash_command(args[0], kwargs.get('with_find', True))]
