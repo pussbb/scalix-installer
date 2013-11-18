@@ -125,7 +125,7 @@ if __name__ == '__main__':
     init_logger(ARGS)
     system = System()
     logger.info('Running on:\n', system, output=True)
-
+    print(os.environ.get('BLOCK_SIZE'))
     try:
         #main(ARGS, system)
         system_tests(system)

@@ -227,10 +227,10 @@ class System(object):
         """
         try:
             #"df -lP %s | gawk '{print $4}'"
-            result = utils.execute("df", "-lP", folder, "|",
-                                   utils.bash_command("gawk"), "'{print $4}'")
+            result = utils.execute("df", "-BK", "-lP", folder, "|",
+                                   utils.bash_command("gawk"), "'{print int($4)}'")
             try:
-                return int(result[1])
+                return int(result[1]) * 1024
             except (UnicodeEncodeError, ValueError) as exception:
                 logger.critical("Could not get partition size", exception,
                                 result)
