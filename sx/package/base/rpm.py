@@ -99,7 +99,7 @@ class RpmFile(AbstractPackageFile):
 
 
     @property
-    def confilts(self):
+    def conflicts(self):
         return self.header[rpm.RPMTAG_CONFLICTS]
 
     @property
@@ -134,7 +134,7 @@ class RpmPackager(AbstractPackagerBase):
         return RpmFile(*args, **kwargs)
 
     def uninstall(self, *args):
-        if len(args) == 1 and isinstance(args[0], list):
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
         for package in args:
             mi = _TS.dbMatch('name', package.name)
@@ -147,7 +147,7 @@ class RpmPackager(AbstractPackagerBase):
         return [package.header, package.file, key]
 
     def add(self, *args):
-        if len(args) == 1 and isinstance(args[0], list):
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
         for package in args:
             _TS.addInstall(*self.__package_instalation_data(package))
@@ -170,10 +170,7 @@ class RpmPackager(AbstractPackagerBase):
         for dep in dependecies:
             package, unresolved, needs_flags, _, sense = dep
             if package[0] not in result:
-                result[package[0]] = {
-                    'require': [],
-                    'conflict': [],
-                }
+                result[package[0]] = { 'require': [], 'conflict': [],}
             data = (
                 unresolved[0],
                 RpmPackager.parse_need_flag(needs_flags),

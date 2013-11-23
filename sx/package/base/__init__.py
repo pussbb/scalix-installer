@@ -126,7 +126,7 @@ class AbstractPackageFile(object):
         raise NotImplementedError()
 
     @property
-    def confilts(self):
+    def conflicts(self):
         raise  NotImplementedError()
 
     def is_32bit(self):
@@ -186,5 +186,5 @@ class AbstractPackageFile(object):
                '{indent}Provides: {provides}\n'\
             .format(name=self.name, indent=indent, file=self.file,
                     ver=self.version, arch=self.arch, lic=self.license,
-                    require=self.requires, conflicts=self.confilts,
+                    require=self.requires, conflicts=self.conflicts,
                     provides=self.provides)

@@ -19,13 +19,13 @@ except ImportError as exception:
     __AVAILABLE = False
 
 from sx.package.base import AbstractPackagerBase, AbstractPackageFile
-
+from sx.exceptions import ScalixUnresolvedDependencies
 class DebFile(AbstractPackageFile):
 
     def __init__(self, deb_file):
         super(AbstractPackageFile, self).__init__()
         self.file = deb_file
-        self.package = DebPackage(deb_file)
+        self.package = DebPackage(deb_file, CACHE)
         self.package.check()
 
     def is_source(self):
@@ -51,10 +51,6 @@ class DebFile(AbstractPackageFile):
         return self.package.pkgname
 
     @property
-    def install(self):
-        return super(DebFile, self).install()
-
-    @property
     def license(self):
         try:
             return self.package['License']
@@ -62,7 +58,7 @@ class DebFile(AbstractPackageFile):
             pass
 
     @property
-    def confilts(self):
+    def conflicts(self):
         return self.package.conflicts
 
     @property
@@ -105,23 +101,61 @@ class DebFile(AbstractPackageFile):
 
 class DebPackager(AbstractPackagerBase):
 
+    def __init__(self, available, file_extention):
+        super(DebPackager, self).__init__(available, file_extention)
+        self.__packages = {}
+
     def add(self, *args):
-        return super(DebPackager, self).add(*args)
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            args = args[0]
+        for pkg in args:
+            self.__packages[pkg.name] = pkg
 
     def check(self):
-        return super(DebPackager, self).check()
+        dependencies = {}
+        for name, item in self.__packages.items():
+            pkg_data = { 'require': [], 'conflict': [],}
+            if item.requires:
+                for dependency in item.requires[0]:
+                    dep_name = dependency[0]
+                    if dep_name not in self.__packages.keys():
+                        pkg = CACHE[dep_name]
+                        #pkg.installedVersion
+                        if not pkg.installed:
+                            pkg_data['require'].append((dependency[0],
+                                                       dependency[2],
+                                                       dependency[1]))
+            if item.conflicts:
+                for conflict in item.conflicts[0]:
+                    if CACHE[conflict[0]].installed:
+                        pkg_data['conflict'].append(conflict)
+
+            if pkg_data['require'] or pkg_data['conflict']:
+                dependencies[name] = pkg_data
+
+        if dependencies:
+            raise ScalixUnresolvedDependencies(dependencies)
+
+        return True
 
     def order(self, packages):
         return packages#return super(DebPackager, self).order(packages)
 
     def uninstall(self, *args):
-        return super(DebPackager, self).uninstall(*args)
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            args = args[0]
+        for package in args:
+            pkg = CACHE[package.name]
+            pkg.mark_delete()
 
     def run(self, callback):
-        return super(DebPackager, self).run(callback)
+        self.check()
+
+        #return super(DebPackager, self).run(callback)
 
     def clear(self):
-        pass#return super(DebPackager, self).clear()
+        self.__packages = {}
+        CACHE.clear()
 
     def package(self, *args, **kwargs):
         return DebFile(*args, **kwargs)
