@@ -40,7 +40,7 @@ class DebFile(AbstractPackageFile):
 
     @property
     def requires(self):
-        return self.package.required_changes
+        return self.package.depends
 
     @property
     def arch(self):

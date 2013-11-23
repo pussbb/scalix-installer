@@ -25,7 +25,7 @@ LOG_FORMATTER_FORMAT = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 LOGGER = logging.getLogger(__name__)
 LOGGER.propagate = False
 
-def init_logger(name, debug_mode=False, filename='scalix-installer',
+def init_logger(name, debug_mode=__debug__, filename='scalix-installer',
                  directory=None):
     """create logging instance
 
@@ -83,9 +83,9 @@ def logger_wrapper(func):
     """
     def real_wrapper(*args, **kwargs):
         list_ = []
-        debug_mode = is_debug()
+
         for item in args:
-            if isinstance(item, object) and debug_mode:
+            if isinstance(item, object) and __debug__:
                 item = repr(item)
             else:
                 item = str(item)

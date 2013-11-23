@@ -2,7 +2,7 @@
 """Scalix Installer.
 
 Usage:
-  merlin.py [--cli] [--debug] [--pkgdir=<pkgdir>] [--logdir=<logdir>] \
+  merlin.py [--cli] [--pkgdir=<pkgdir>] [--logdir=<logdir>] \
 [--instance=<instance_name>] [--hostname=<hostname>] [--no-root]
   merlin.py (-h | --help)
   merlin.py --version
@@ -11,7 +11,6 @@ Options:
   -h --help                     Show this screen.
   --version                     Show version.
   --cli                         Console only application
-  --debug                       Show debug information
   --pkgdir=<pkgdir>             Directory with packages to install or upgrade
   --logdir=<logdir>             Directory for log file [default: ../logs/]
   --instance=<instance_name>    Scalix Instance name
@@ -96,8 +95,7 @@ def system_tests(system):
     #print(System.open_url('http://python.org/'))
 
 def init_logger(args):
-    logger.init_logger('Merlin', directory=args['--logdir'],
-                                         debug_mode=args['--debug'])
+    logger.init_logger('Merlin', directory=args['--logdir'])
 
     logger.info("Initializing Installer version", version.get_version(),
                 output=True)
@@ -135,6 +133,6 @@ if __name__ == '__main__':
     except:
         raise
     finally:
-        if logger.is_debug():
+        if __debug__:
             pass#os.remove(logger.logger_filename(base_name=False))
 
