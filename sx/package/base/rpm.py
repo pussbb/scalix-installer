@@ -29,13 +29,11 @@ __all__ = ["RPM"]
 
 try:
     import rpm
+    rpm.setVerbosity(0)
+    _TS = rpm.ts()
+    _TS.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
 except ImportError as exception:
     __AVAILABLE = False
-
-rpm.setVerbosity(0)
-_TS = rpm.ts()
-_TS.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
-
 
 class RpmFile(AbstractPackageFile):
 

@@ -55,7 +55,7 @@ def service_test(system):
 def package_manager_test(system):
 
     pm = PackageManager(system)
-    pm.scan_folder('../../products/')
+    pm.scan_folder('../products/')
     print(repr(pm))
     return
     try:

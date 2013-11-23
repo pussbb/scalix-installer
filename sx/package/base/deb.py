@@ -25,12 +25,18 @@ class DebFile(AbstractPackageFile):
     def __init__(self, deb_file):
         super(AbstractPackageFile, self).__init__()
         self.file = deb_file
-        self.package = DebPackage(deb_file, CACHE)
+        self.package = DebPackage(deb_file)
         self.package.check()
-        print(CACHE[self.name])
 
     def is_source(self):
-        return  'Source' in self.package or self.arch == 'source'
+        try:
+            self.package['Source']
+        except KeyError as exception:
+            if self.arch == 'source':
+                return True
+            else:
+                return False
+        return True
 
     @property
     def requires(self):
@@ -50,9 +56,10 @@ class DebFile(AbstractPackageFile):
 
     @property
     def license(self):
-        if 'License' in self.package:
+        try:
             return self.package['License']
-
+        except KeyError as exception:
+            pass
 
     @property
     def confilts(self):
@@ -90,9 +97,10 @@ class DebFile(AbstractPackageFile):
 
     @property
     def release(self):
-        if 'Distribution' in self.package:
+        try:
             return self.package['Distribution']
-        return 'unstable'
+        except KeyError as exception:
+            return 'unstable'
 
 
 class DebPackager(AbstractPackagerBase):
