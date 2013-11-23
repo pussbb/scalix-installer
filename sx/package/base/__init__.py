@@ -115,7 +115,7 @@ class AbstractPackageFile(object):
 
     @property
     def noarch(self):
-        return self.arch == 'noarch'
+        return self.arch in ['noarch', 'all']
 
     @property
     def requires(self):
@@ -133,7 +133,7 @@ class AbstractPackageFile(object):
         return self.arch in ['i386', 'i586', 'i686',]
 
     def is_64bit(self):
-        return self.arch == 'x86_64'
+        return self.arch in ['x86_64', 'amd64']
 
     def is_source(self):
         raise NotImplementedError()

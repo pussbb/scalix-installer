@@ -12,7 +12,9 @@ __author__ = 'pussbb'
 __AVAILABLE = True
 
 try:
-    import debian
+    import apt
+    from apt.debfile import DebPackage
+    CACHE = apt.Cache()
 except ImportError as exception:
     __AVAILABLE = False
 
@@ -20,20 +22,27 @@ from sx.package.base import AbstractPackagerBase, AbstractPackageFile
 
 class DebFile(AbstractPackageFile):
 
+    def __init__(self, deb_file):
+        super(AbstractPackageFile, self).__init__()
+        self.file = deb_file
+        self.package = DebPackage(deb_file, CACHE)
+        self.package.check()
+        print(CACHE[self.name])
+
     def is_source(self):
-        return super(DebFile, self).is_source()
+        return  'Source' in self.package or self.arch == 'source'
 
     @property
     def requires(self):
-        return super(DebFile, self).requires()
+        return self.package.required_changes
 
     @property
     def arch(self):
-        return super(DebFile, self).arch()
+        return self.package['Architecture']
 
     @property
     def name(self):
-        return super(DebFile, self).name()
+        return self.package.pkgname
 
     @property
     def install(self):
@@ -41,19 +50,21 @@ class DebFile(AbstractPackageFile):
 
     @property
     def license(self):
-        return super(DebFile, self).license()
+        if 'License' in self.package:
+            return self.package['License']
+
 
     @property
     def confilts(self):
-        return super(DebFile, self).confilts()
+        return self.package.conflicts
 
     @property
     def version(self):
-        return super(DebFile, self).version()
+        return self.package['Version']
 
     @property
     def summary(self):
-        return super(DebFile, self).summary()
+        return self.description
 
     @property
     def upgradable(self):
@@ -61,28 +72,28 @@ class DebFile(AbstractPackageFile):
 
     @property
     def provides(self):
-        return super(DebFile, self).provides()
+        return self.package.provides
 
     @property
     def platform(self):
-        return super(DebFile, self).platform()
+        return None
 
     @property
     def description(self):
-        return super(DebFile, self).description()
+        return self.package['Description']
 
     @property
     def installed(self):
-        return super(DebFile, self).installed()
+        return self.package.compare_to_version_in_cache() \
+               != DebPackage.VERSION_NONE
+
 
     @property
     def release(self):
-        return super(DebFile, self).release()
+        if 'Distribution' in self.package:
+            return self.package['Distribution']
+        return 'unstable'
 
-    def __init__(self, deb_file):
-        super(DebFile, self).__init__()
-        self.file = deb_file
-        pass
 
 class DebPackager(AbstractPackagerBase):
 
@@ -93,7 +104,7 @@ class DebPackager(AbstractPackagerBase):
         return super(DebPackager, self).check()
 
     def order(self, packages):
-        return super(DebPackager, self).order(packages)
+        return packages#return super(DebPackager, self).order(packages)
 
     def uninstall(self, *args):
         return super(DebPackager, self).uninstall(*args)
@@ -102,7 +113,7 @@ class DebPackager(AbstractPackagerBase):
         return super(DebPackager, self).run(callback)
 
     def clear(self):
-        return super(DebPackager, self).clear()
+        pass#return super(DebPackager, self).clear()
 
     def package(self, *args, **kwargs):
         return DebFile(*args, **kwargs)

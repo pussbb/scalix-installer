@@ -45,7 +45,7 @@ UNAME_KEYS = [
 SUPPORTED_PLATFORMS = (
     ('CentOS', '6', 'Final', ['x86_64', 'i686'], 'rhel6', RPM, RHELServiceManager),
 
-    ('Ubuntu', '13.10', 'saucy', ['x86_64'], 'rhel6', RPM, DebServiceManager),
+    ('Ubuntu', '13.10', 'saucy', ['x86_64'], None, DEB, DebServiceManager),
 )
 
 def platform_depend_function(func):

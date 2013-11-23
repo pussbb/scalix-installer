@@ -55,7 +55,9 @@ def service_test(system):
 def package_manager_test(system):
 
     pm = PackageManager(system)
-    pm.scan_folder('../products/')
+    pm.scan_folder('../../products/')
+    print(repr(pm))
+    return
     try:
 
         for package in pm.packages:
@@ -125,15 +127,14 @@ if __name__ == '__main__':
     init_logger(ARGS)
     system = System()
     logger.info('Running on:\n', system, output=True)
-    print(os.environ.get('BLOCK_SIZE'))
     try:
         #main(ARGS, system)
-        system_tests(system)
-        #package_manager_test(system)
+        #system_tests(system)
+        package_manager_test(system)
         #service_test(system)
     except:
         raise
     finally:
         if logger.is_debug():
-            os.remove(logger.logger_filename(base_name=False))
+            pass#os.remove(logger.logger_filename(base_name=False))
 
