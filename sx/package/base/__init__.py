@@ -49,7 +49,8 @@ class AbstractPackageFile(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, _file):
+        self.file = _file
         self.__install = False
         self.__upgrade = False
         self.__uninstall = False

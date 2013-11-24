@@ -12,13 +12,6 @@ __author__ = 'pussbb'
 __AVAILABLE = True
 
 import os
-import sys
-#from cStringIO import StringIO
-
-if sys.version_info[0] < 3:
-    import imp
-    imp.reload(sys)
-    sys.setdefaultencoding("UTF-8")
 
 from sx.package.base import AbstractPackagerBase, AbstractPackageFile
 from sx.exceptions import ScalixUnresolvedDependencies, ScalixPackageProblems
@@ -32,20 +25,18 @@ try:
     rpm.setVerbosity(0)
     _TS = rpm.ts()
     _TS.setVSFlags(rpm._RPMVSF_NOSIGNATURES)
-except ImportError as exception:
+except ImportError as _:
     __AVAILABLE = False
 
 class RpmFile(AbstractPackageFile):
 
     def __init__(self, rpm_file):
-        #super(AbstractPackageFile, self).__init__()
-        AbstractPackageFile.__init__(self)
-        self.file = rpm_file
+        AbstractPackageFile.__init__(self, rpm_file)
         self.header = None
         fdno = os.open(rpm_file, os.O_RDONLY)
         try:
             self.header = _TS.hdrFromFdno(fdno)
-        except rpm.error as exception:
+        except rpm.error as _:
             pass
         finally:
             os.close(fdno)
@@ -241,7 +232,7 @@ class RpmPackager(AbstractPackagerBase):
         _TS.clean()
         try:
             _TS.clear()
-        except AttributeError as exception:
+        except AttributeError as _:
             pass
 
     def check(self):
@@ -258,13 +249,13 @@ class RpmPackager(AbstractPackagerBase):
         return True
 
     def order(self, packages):
-        ts = rpm.ts()
+        ts_tmp = rpm.ts()
         for package in packages.values():
-            ts.addInstall(*self.__package_instalation_data(package))
+            ts_tmp.addInstall(*self.__package_instalation_data(package))
 
-        ts.check()
-        ts.order()
-        return [te.N() for te in ts]
+        ts_tmp.check()
+        ts_tmp.order()
+        return [te.N() for te in ts_tmp]
 
     def run_callback(self, reason, amount, total, key, callback):
         sx.logger.debug("run call back data", reason, amount, total, key,
@@ -294,8 +285,6 @@ class RpmPackager(AbstractPackagerBase):
             callback(PKG_UNINST_STOP, key)
 
     def run(self, callback):
-        #TODO write exceptions
-
         self.check()
         _TS.order()
         rpm.setLogFile(sx.logger.logger_stream())

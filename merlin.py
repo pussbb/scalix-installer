@@ -57,7 +57,6 @@ def package_manager_test(system):
     pm.scan_folder('../products/')
     print(repr(pm))
     try:
-
         for package in pm.packages:
             if not package.installed:
                 package.install = True

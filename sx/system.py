@@ -71,6 +71,7 @@ class System(object):
         self.platform = sys.platform
         self.__supported = False
         self.packager = None
+        self.machine = None
         self.target_platform = None
         self.service_manager = None
 

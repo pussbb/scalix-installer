@@ -17,7 +17,7 @@ import re
 import sx.utils as utils
 import sx.logger as logger
 
-from sx.exceptions import ScalixExternalCommandFailed,\
+from sx.exceptions import ScalixExternalCommandFailed, \
     ScalixExternalCommandException
 
 def is_root(func):

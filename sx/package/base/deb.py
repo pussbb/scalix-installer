@@ -24,8 +24,7 @@ from sx.exceptions import ScalixUnresolvedDependencies
 class DebFile(AbstractPackageFile):
 
     def __init__(self, deb_file):
-        AbstractPackageFile.__init__(self)
-        self.file = deb_file
+        AbstractPackageFile.__init__(self, deb_file)
         self.package = DebPackage(deb_file, CACHE)
         self.package.check()
 
@@ -179,7 +178,6 @@ class DebPackager(AbstractPackagerBase):
         elif CACHE.delete_count > 0:
             CACHE.commit()
         self.clear()
-        #return super(DebPackager, self).run(callback)
 
     def clear(self):
         self.__packages = {}
