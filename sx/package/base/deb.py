@@ -20,10 +20,11 @@ except ImportError as exception:
 
 from sx.package.base import AbstractPackagerBase, AbstractPackageFile
 from sx.exceptions import ScalixUnresolvedDependencies
+
 class DebFile(AbstractPackageFile):
 
     def __init__(self, deb_file):
-        super(AbstractPackageFile, self).__init__()
+        AbstractPackageFile.__init__(self)
         self.file = deb_file
         self.package = DebPackage(deb_file, CACHE)
         self.package.check()
@@ -90,7 +91,6 @@ class DebFile(AbstractPackageFile):
         return self.package.compare_to_version_in_cache() \
                != DebPackage.VERSION_NONE
 
-
     @property
     def release(self):
         try:
@@ -102,7 +102,7 @@ class DebFile(AbstractPackageFile):
 class DebPackager(AbstractPackagerBase):
 
     def __init__(self, available, file_extention):
-        super(DebPackager, self).__init__(available, file_extention)
+        AbstractPackagerBase.__init__(self, available, file_extention)
         self.__packages = {}
 
     def add(self, *args):
@@ -176,7 +176,7 @@ class DebPackager(AbstractPackagerBase):
             sorted_list = self.order(self.__packages)
             for pkg_name in sorted_list:
                 self.__packages[pkg_name].package.install()
-        elif CACHE.delete_count() > 0:
+        elif CACHE.delete_count > 0:
             CACHE.commit()
         self.clear()
         #return super(DebPackager, self).run(callback)
