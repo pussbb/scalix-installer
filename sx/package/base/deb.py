@@ -54,7 +54,7 @@ class DebFile(AbstractPackageFile):
     def license(self):
         try:
             return self.package['License']
-        except KeyError as exception:
+        except KeyError as _:
             pass
 
     @property
@@ -95,7 +95,7 @@ class DebFile(AbstractPackageFile):
     def release(self):
         try:
             return self.package['Distribution']
-        except KeyError as exception:
+        except KeyError as _:
             return 'unstable'
 
 
@@ -111,24 +111,31 @@ class DebPackager(AbstractPackagerBase):
         for pkg in args:
             self.__packages[pkg.name] = pkg
 
+    def __check_dependencies(self, dependencies, pkg_data):
+        for dependency in dependencies:
+            for dep in dependency:
+                dep_name = dep[0]
+                dep_data = (dep[0], dep[2], dep[1])
+                if dep_name in self.__packages:
+                    continue
+                try:
+                    pkg = CACHE[dep_name]
+                    if not pkg.installed:
+                        pkg_data['require'].append(dep_data)
+                except KeyError as _:
+                    pkg_data['require'].append(dep_data)
+
+    def __check_conflicts(self, conflicts, pkg_data):
+        for conflict in conflicts:
+            if CACHE[conflict[0]].installed:
+                pkg_data['conflict'].append(conflict)
+
     def check(self):
         dependencies = {}
         for name, item in self.__packages.items():
             pkg_data = { 'require': [], 'conflict': [],}
-            if item.requires:
-                for dependency in item.requires[0]:
-                    dep_name = dependency[0]
-                    if dep_name not in self.__packages.keys():
-                        pkg = CACHE[dep_name]
-                        #pkg.installedVersion
-                        if not pkg.installed:
-                            pkg_data['require'].append((dependency[0],
-                                                       dependency[2],
-                                                       dependency[1]))
-            if item.conflicts:
-                for conflict in item.conflicts[0]:
-                    if CACHE[conflict[0]].installed:
-                        pkg_data['conflict'].append(conflict)
+            self.__check_dependencies(item.requires, pkg_data)
+            self.__check_conflicts(item.conflicts, pkg_data)
 
             if pkg_data['require'] or pkg_data['conflict']:
                 dependencies[name] = pkg_data
@@ -138,8 +145,23 @@ class DebPackager(AbstractPackagerBase):
 
         return True
 
+    def __prepend_dep(self, name, packages, queue):
+        for dep in packages[name].requires:
+            for _dep in dep:
+                dep_name = _dep[0]
+                if dep_name not in packages or dep_name in queue:
+                    continue
+                self.__prepend_dep(dep_name, packages, queue)
+        queue.append(name)
+
     def order(self, packages):
-        return packages#return super(DebPackager, self).order(packages)
+        queue = []
+        for name in sorted(packages):
+            if name in queue:
+                continue
+            self.__prepend_dep(name, packages, queue)
+        return queue
+
 
     def uninstall(self, *args):
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
@@ -150,7 +172,13 @@ class DebPackager(AbstractPackagerBase):
 
     def run(self, callback):
         self.check()
-
+        if self.__packages:
+            sorted_list = self.order(self.__packages)
+            for pkg_name in sorted_list:
+                self.__packages[pkg_name].package.install()
+        elif CACHE.delete_count() > 0:
+            CACHE.commit()
+        self.clear()
         #return super(DebPackager, self).run(callback)
 
     def clear(self):
