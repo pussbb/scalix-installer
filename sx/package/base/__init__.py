@@ -61,8 +61,6 @@ class AbstractPackageFile(object):
 
     def __le__(self, other):
         #x<=y
-        print(self.version)
-        print(other.version)
         return LooseVersion(self.version) <= LooseVersion(other.version)
 
     def __eq__(self, other):
