@@ -65,7 +65,7 @@ class PackageManager(object):
         """
         file_ = utils.absolute_file_path(filename, directory)
         package = self.system.packager.package(file_)
-
+        print(package)
         #for now skip source packages let's deal with only with binary packages
         if package.is_source():
             return
