@@ -1,6 +1,6 @@
 __author__ = 'pussbb'
 
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 from sx.exceptions import ScalixPackageException
 
 class AbstractPackagerBase(object):
@@ -57,27 +57,27 @@ class AbstractPackageFile(object):
 
     def __lt__(self, other):
         #x<y
-        return StrictVersion(self.version) < StrictVersion(other.version)
+        return LooseVersion(self.version) < LooseVersion(other.version)
 
     def __le__(self, other):
         #x<=y
-        return StrictVersion(self.version) <= StrictVersion(other.version)
+        return LooseVersion(self.version) <= LooseVersion(other.version)
 
     def __eq__(self, other):
         #x==y
-        return StrictVersion(self.version) == StrictVersion(other.version)
+        return LooseVersion(self.version) == LooseVersion(other.version)
 
     def __ne__(self, other):
         #x!=y and x<>y
-        return StrictVersion(self.version) != StrictVersion(other.version)
+        return LooseVersion(self.version) != LooseVersion(other.version)
 
     def __ge__(self, other):
         #x>=y
-        return StrictVersion(self.version) >= StrictVersion(other.version)
+        return LooseVersion(self.version) >= LooseVersion(other.version)
 
     def __gt__(self, other):
         #x>y
-        return StrictVersion(self.version) > StrictVersion(other.version)
+        return LooseVersion(self.version) > LooseVersion(other.version)
 
     def __hash__(self):
         return hash(self)
