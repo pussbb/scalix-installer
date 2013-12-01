@@ -27,7 +27,8 @@ __author__ = 'pussbb'
 import os
 
 import sys
-sys.path.append(os.path.dirname(__file__))
+_dir = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(_dir, '3rdparty'))
 
 from sx.exceptions import ScalixException, ScalixPackageException, \
     ScalixUnresolvedDependencies, ScalixPackageProblems
