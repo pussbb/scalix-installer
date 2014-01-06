@@ -173,7 +173,7 @@ class AbstractPackageFile(object):
         return self.__uninstall
 
     @uninstall.setter
-    def unistall(self, state):
+    def uninstall(self, state):
         if not self.installed and state:
             raise ScalixPackageException("Package not installed that\'s why"
                                          " it can not be mark for uninstall")

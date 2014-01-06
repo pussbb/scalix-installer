@@ -69,7 +69,7 @@ def package_manager_test(system):
             if not package.installed:
                 package.install = True
             else:
-                package.unistall = True
+                package.uninstall = True
         pm.proccess()
 
     except ScalixPackageException as exception:

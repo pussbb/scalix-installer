@@ -149,7 +149,7 @@ class PackageManager(object):
         for package in self.packages:
             if package.install or package.upgrade:
                 self.system.packager.add(package)
-            elif package.unistall:
+            elif package.uninstall:
                 self.system.packager.uninstall(package)
 
         self.system.packager.run(callback)
