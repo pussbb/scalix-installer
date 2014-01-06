@@ -27,6 +27,13 @@ __author__ = 'pussbb'
 import os
 
 import sys
+import signal
+
+def sigint_handler(signum, frame):
+    pass
+
+signal.signal(signal.SIGINT, sigint_handler )
+
 _dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(_dir, '3rdparty'))
 
@@ -57,7 +64,6 @@ def package_manager_test(system):
     pm = PackageManager(system)
     pm.scan_folder('../products/')
     print(repr(pm))
-    return
     try:
         for package in pm.packages:
             if not package.installed:
@@ -117,22 +123,30 @@ def main(args, system):
     if args["--hostname"]:
         os.environ["OMHOSTNAME"] = args["--hostname"]
 
+    app = None
+    if args["--cli"] or not app:
+        import sx.cli.app
+        app = sx.cli.app.CliApplication
+
+    try:
+        app(system).run()
+    except (EOFError, KeyboardInterrupt, SystemExit) as _:
+        pass
 
 if __name__ == '__main__':
     from docopt import docopt
-
     ARGS = docopt(__doc__, version=version.get_version())
     init_logger(ARGS)
     system = System()
     logger.info('Running on:\n', system, output=True)
     try:
-        #main(ARGS, system)
+        main(ARGS, system)
         #system_tests(system)
-        package_manager_test(system)
+        #package_manager_test(system)
         #service_test(system)
     except:
         raise
     finally:
         if __debug__:
-            pass#os.remove(logger.logger_filename(base_name=False))
+            os.remove(logger.logger_filename(base_name=False))
 

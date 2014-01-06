@@ -653,7 +653,7 @@ class RealTerminal(object):
     def tty_signal_keys(self, intr=None, quit=None, start=None, 
         stop=None, susp=None, fileno=None):
         """
-        Read and/or set the tty's signal charater settings.
+        Read and/or set the tty's signal character settings.
         This function returns the current settings as a tuple.
 
         Use the string 'undefined' to unmap keys from their signals.
@@ -816,18 +816,29 @@ class BaseScreen(object):
         if mono is None:
             mono = DEFAULT
         mono = AttrSpec(mono, DEFAULT, 1)
-        
+
         if foreground_high is None:
             foreground_high = foreground
         if background_high is None:
             background_high = background
-        high_88 = AttrSpec(foreground_high, background_high, 88)
         high_256 = AttrSpec(foreground_high, background_high, 256)
+
+        # 'hX' where X > 15 are different in 88/256 color, use
+        # basic colors for 88-color mode if high colors are specified
+        # in this way (also avoids crash when X > 87)
+        def large_h(desc):
+            if not desc.startswith('h'):
+                return False
+            num = int(desc[1:], 10)
+            return num > 15
+        if large_h(foreground_high) or large_h(background_high):
+            high_88 = basic
+        else:
+            high_88 = AttrSpec(foreground_high, background_high, 88)
 
         signals.emit_signal(self, UPDATE_PALETTE_ENTRY,
             name, basic, mono, high_88, high_256)
         self._palette[name] = (basic, mono, high_88, high_256)
-        
 
 
 def _test():

@@ -50,6 +50,7 @@ class Screen(BaseScreen, RealTerminal):
         """
         super(Screen, self).__init__()
         self._pal_escape = {}
+        self._pal_attrspec = {}
         signals.connect_signal(self, UPDATE_PALETTE_ENTRY, 
             self._on_update_palette_entry)
         self.colors = 16 # FIXME: detect this
@@ -64,11 +65,14 @@ class Screen(BaseScreen, RealTerminal):
         self.maxrow = None
         self.gpm_mev = None
         self.gpm_event_pending = False
+        self._mouse_tracking_enabled = False
         self.last_bstate = 0
         self._setup_G1_done = False
         self._rows_used = None
         self._cy = 0
-        self.bright_is_bold = os.environ.get('TERM',None) != "xterm"
+        term = os.environ.get('TERM', '')
+        self.bright_is_bold = not term.startswith("xterm")
+        self.back_color_erase = not term.startswith("screen")
         self._next_timeout = None
         self._term_output_file = sys.stdout
         self._term_input_file = sys.stdin
@@ -78,8 +82,9 @@ class Screen(BaseScreen, RealTerminal):
 
     def _on_update_palette_entry(self, name, *attrspecs):
         # copy the attribute to a dictionary containing the escape seqences
-        self._pal_escape[name] = self._attrspec_to_escape(
-            attrspecs[{16:0,1:1,88:2,256:3}[self.colors]])
+        a = attrspecs[{16:0,1:1,88:2,256:3}[self.colors]]
+        self._pal_attrspec[name] = a
+        self._pal_escape[name] = self._attrspec_to_escape(a)
 
     def set_input_timeouts(self, max_wait=None, complete_wait=0.125, 
         resize_wait=0.125):
@@ -111,38 +116,56 @@ class Screen(BaseScreen, RealTerminal):
             os.write(self._resize_pipe_wr, B('R'))
         self._resized = True
         self.screen_buf = None
-      
+
+    def _sigcont_handler(self, signum, frame):
+        self.stop()
+        self.start()
+        self._sigwinch_handler(None, None)
+
     def signal_init(self):
         """
-        Called in the startup of run wrapper to set the SIGWINCH 
-        signal handler to self._sigwinch_handler.
+        Called in the startup of run wrapper to set the SIGWINCH
+        and SIGCONT signal handlers.
 
         Override this function to call from main thread in threaded
         applications.
         """
         signal.signal(signal.SIGWINCH, self._sigwinch_handler)
-    
+        signal.signal(signal.SIGCONT, self._sigcont_handler)
+
     def signal_restore(self):
         """
         Called in the finally block of run wrapper to restore the
-        SIGWINCH handler to the default handler.
+        SIGWINCH and SIGCONT signal handlers.
 
         Override this function to call from main thread in threaded
         applications.
         """
+        signal.signal(signal.SIGCONT, signal.SIG_DFL)
         signal.signal(signal.SIGWINCH, signal.SIG_DFL)
-      
-    def set_mouse_tracking(self):
+
+    def set_mouse_tracking(self, enable=True):
         """
-        Enable mouse tracking.  
-        
+        Enable (or disable) mouse tracking.
+
         After calling this function get_input will include mouse
         click events along with keystrokes.
         """
-        self._term_output_file.write(escape.MOUSE_TRACKING_ON)
+        enable = bool(enable)
+        if enable == self._mouse_tracking_enabled:
+            return
 
-        self._start_gpm_tracking()
-    
+        self._mouse_tracking(enable)
+        self._mouse_tracking_enabled = enable
+
+    def _mouse_tracking(self, enable):
+        if enable:
+            self._term_output_file.write(escape.MOUSE_TRACKING_ON)
+            self._start_gpm_tracking()
+        else:
+            self._term_output_file.write(escape.MOUSE_TRACKING_OFF)
+            self._stop_gpm_tracking()
+
     def _start_gpm_tracking(self):
         if not os.path.isfile("/usr/bin/mev"):
             return
@@ -154,12 +177,14 @@ class Screen(BaseScreen, RealTerminal):
             close_fds=True)
         fcntl.fcntl(m.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         self.gpm_mev = m
-    
+
     def _stop_gpm_tracking(self):
+        if not self.gpm_mev:
+            return
         os.kill(self.gpm_mev.pid, signal.SIGINT)
         os.waitpid(self.gpm_mev.pid, 0)
         self.gpm_mev = None
-    
+
     def start(self, alternate_buffer=True):
         """
         Initialize the screen and input mode.
@@ -189,7 +214,8 @@ class Screen(BaseScreen, RealTerminal):
         super(Screen, self).start()
 
         signals.emit_signal(self, INPUT_DESCRIPTORS_CHANGED)
-
+        # restore mouse tracking to previous state
+        self._mouse_tracking(self._mouse_tracking_enabled)
 
     def stop(self):
         """
@@ -208,17 +234,17 @@ class Screen(BaseScreen, RealTerminal):
             termios.tcsetattr(fd, termios.TCSADRAIN,
         self._old_termios_settings)
 
+        self._mouse_tracking(False)
+
         move_cursor = ""
-        if self.gpm_mev:
-            self._stop_gpm_tracking()
         if self._alternate_buffer:
             move_cursor = escape.RESTORE_NORMAL_BUFFER
         elif self.maxrow is not None:
-            move_cursor = escape.set_cursor_position( 
+            move_cursor = escape.set_cursor_position(
                 0, self.maxrow)
-        self._term_output_file.write(self._attrspec_to_escape(AttrSpec('','')) 
+        self._term_output_file.write(
+            self._attrspec_to_escape(AttrSpec('',''))
             + escape.SI
-            + escape.MOUSE_TRACKING_OFF
             + escape.SHOW_CURSOR
             + move_cursor + "\n" + escape.SHOW_CURSOR )
         self._input_iter = self._fake_input_iter()
@@ -231,7 +257,7 @@ class Screen(BaseScreen, RealTerminal):
 
     def run_wrapper(self, fn, alternate_buffer=True):
         """
-        Call start to initialize screen, then call fn.  
+        Call start to initialize screen, then call fn.
         When fn exits call stop to restore the screen to normal.
 
         alternate_buffer -- use alternate screen buffer and restore
@@ -480,7 +506,18 @@ class Screen(BaseScreen, RealTerminal):
             b |= mod
             l.extend([ 27, ord('['), ord('M'), b+32, x+32, y+32 ])
 
-        if ev == 20: # press
+        def determine_button_release( flag ):
+            if b & 4 and last & 1:
+                append_button( 0 + flag )
+                next |= 1
+            if b & 2 and last & 2:
+                append_button( 1 + flag )
+                next |= 2
+            if b & 1 and last & 4:
+                append_button( 2 + flag )
+                next |= 4
+
+        if ev == 20 or ev == 36 or ev == 52: # press
             if b & 4 and last & 1 == 0:
                 append_button( 0 )
                 next |= 1
@@ -507,7 +544,21 @@ class Screen(BaseScreen, RealTerminal):
             if b & 1 and last & 4:
                 append_button( 2 + escape.MOUSE_RELEASE_FLAG )
                 next &= ~ 4
-            
+        if ev == 40: # double click (release)
+            if b & 4 and last & 1:
+                append_button( 0 + escape.MOUSE_MULTIPLE_CLICK_FLAG )
+            if b & 2 and last & 2:
+                append_button( 1 + escape.MOUSE_MULTIPLE_CLICK_FLAG )
+            if b & 1 and last & 4:
+                append_button( 2 + escape.MOUSE_MULTIPLE_CLICK_FLAG )
+        elif ev == 52:
+            if b & 4 and last & 1:
+                append_button( 0 + escape.MOUSE_MULTIPLE_CLICK_FLAG*2 )
+            if b & 2 and last & 2:
+                append_button( 1 + escape.MOUSE_MULTIPLE_CLICK_FLAG*2 )
+            if b & 1 and last & 4:
+                append_button( 2 + escape.MOUSE_MULTIPLE_CLICK_FLAG*2 )
+
         self.last_bstate = next
         return l
     
@@ -517,8 +568,14 @@ class Screen(BaseScreen, RealTerminal):
     
     def get_cols_rows(self):
         """Return the terminal dimensions (num columns, num rows)."""
-        buf = fcntl.ioctl(0, termios.TIOCGWINSZ, ' '*4)
-        y, x = struct.unpack('hh', buf)
+        y, x = 80, 24
+        try:
+            buf = fcntl.ioctl(self._term_output_file.fileno(),
+                              termios.TIOCGWINSZ, ' '*4)
+            y, x = struct.unpack('hh', buf)
+        except IOError:
+            # Term size could not be determined
+            pass
         self.maxrow = y
         return x, y
 
@@ -612,6 +669,10 @@ class Screen(BaseScreen, RealTerminal):
             return self._attrspec_to_escape(
                 AttrSpec('default','default'))
 
+        def using_standout(a):
+            a = self._pal_attrspec.get(a, a)
+            return isinstance(a, AttrSpec) and a.standout
+
         ins = None
         o.append(set_cursor_home())
         cy = 0
@@ -640,12 +701,14 @@ class Screen(BaseScreen, RealTerminal):
             cy = y
 
             whitespace_at_end = False
-            if row and row[-1][2][-1:] == B(' '):
-                whitespace_at_end = True
+            if row:
                 a, cs, run = row[-1]
-                row = row[:-1] + [(a, cs, run.rstrip(B(' ')))]
-            elif y == maxrow-1 and maxcol>1:
-                row, back, ins = self._last_row(row)
+                if (run[-1:] == B(' ') and self.back_color_erase
+                        and not using_standout(a)):
+                    whitespace_at_end = True
+                    row = row[:-1] + [(a, cs, run.rstrip(B(' ')))]
+                elif y == maxrow-1 and maxcol > 1:
+                    row, back, ins = self._last_row(row)
 
             first = True
             lasta = lastcs = None

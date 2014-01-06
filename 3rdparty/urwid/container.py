@@ -85,6 +85,23 @@ class WidgetContainerMixin(object):
                 w.focus_position = p # modifies w.focus
             w = w.focus.base_widget
 
+    def get_focus_widgets(self):
+        """
+        Return the .focus values starting from this container
+        and proceeding along each child widget until reaching a leaf
+        (non-container) widget.
+
+        Note that the list does not contain the topmost container widget
+        (i.e, on which this method is called), but does include the
+        lowest leaf widget.
+        """
+        out = []
+        w = self
+        while True:
+            w = w.base_widget.focus
+            if w is None:
+                return out
+            out.append(w)
 
 class WidgetContainerListContentsMixin(object):
     """
@@ -342,6 +359,10 @@ class GridFlow(WidgetWrap, WidgetContainerMixin, WidgetContainerListContentsMixi
                 # FIXME: determine why this is necessary
                 pad.original_widget=w
             pad.width = used_space - self.h_sep
+
+        if self.v_sep:
+            # remove first divider
+            del p.contents[:1]
 
         return p
 
@@ -1460,9 +1481,11 @@ class Pile(Widget, WidgetContainerMixin, WidgetContainerListContentsMixin):
             elif f == GIVEN:
                 l.append(height)
                 remaining -= height
-            else:
+            elif height:
                 l.append(None)
                 wtotal += height
+            else:
+                l.append(0) # zero-weighted items treated as ('given', 0)
 
         if wtotal == 0:
             raise PileError, "No weighted widgets found for Pile treated as a box widget"
@@ -1644,6 +1667,8 @@ class Pile(Widget, WidgetContainerMixin, WidgetContainerListContentsMixin):
             if wrow + r > row:
                 break
             wrow += r
+        else:
+            return False
 
         focus = focus and self.focus_item == w
         if is_mouse_press(event) and button == 1:
@@ -1968,7 +1993,8 @@ class Columns(Widget, WidgetContainerMixin, WidgetContainerListContentsMixin):
         maxcol = size[0]
         # FIXME: get rid of this check and recalculate only when
         # a 'pack' widget has been modified.
-        if maxcol == self._cache_maxcol and not PACK in self.column_types:
+        if maxcol == self._cache_maxcol and not any(
+                t == PACK for w, (t, n, b) in self.contents):
             return self._cache_column_widths
 
         widths = []
@@ -2104,17 +2130,15 @@ class Columns(Widget, WidgetContainerMixin, WidgetContainerListContentsMixin):
         for i, (width, (w, options)) in enumerate(zip(widths, self.contents)):
             end = x + width
             if w.selectable():
-                # FIXME: sometimes, col == 'left' - that doesn't seem like its handled here, does it?
-                # assert isinstance(x, int) and isinstance(col, int), (x, col)
-                if x > col and best is None:
+                if col != RIGHT and (col == LEFT or x > col) and best is None:
                     # no other choice
                     best = i, x, end, w, options
                     break
-                if x > col and col-best[2] < x-col:
+                if col != RIGHT and x > col and col-best[2] < x-col:
                     # choose one on left
                     break
                 best = i, x, end, w, options
-                if col < end:
+                if col != RIGHT and col < end:
                     # choose this one
                     break
             x = end + self.dividechars

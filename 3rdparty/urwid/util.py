@@ -23,6 +23,8 @@
 from urwid import escape
 from urwid.compat import bytes
 
+import codecs
+
 str_util = escape.str_util
 
 # bring str_util functions into our namespace
@@ -115,10 +117,10 @@ def apply_target_encoding( s ):
             for c, alt in zip(escape.DEC_SPECIAL_CHARS, 
                     escape.ALT_DEC_SPECIAL_CHARS):
                 s = s.replace( c, escape.SO+alt+escape.SI )
-    
+
     if type(s) == unicode:
-        s = s.replace( escape.SI+escape.SO, u"" ) # remove redundant shifts
-        s = s.encode( _target_encoding )
+        s = s.replace(escape.SI+escape.SO, u"") # remove redundant shifts
+        s = codecs.encode(s, _target_encoding, 'replace')
 
     assert isinstance(s, bytes)
     SO = escape.SO.encode('ascii')

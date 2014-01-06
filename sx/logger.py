@@ -38,8 +38,8 @@ def init_logger(name, debug_mode=__debug__, filename='scalix-installer',
         LOGGER.setLevel(logging.INFO)
     if not filename:
         filename = name
-    filename = LOG_FILENAME_FORMAT\
-        .format(filename=filename,*time.localtime(time.time()))
+    filename = LOG_FILENAME_FORMAT.format(filename=filename,
+                                          *time.localtime(time.time()))
     filename = sx.utils.absolute_file_path(filename, directory, True)
     handler = logging.FileHandler(filename)
     formatter = logging.Formatter(LOG_FORMATTER_FORMAT)
@@ -103,7 +103,7 @@ def debug(*args):
     """
     if not is_debug():
         return
-    LOGGER.info(*args)
+    LOGGER.debug(*args)
 
 @logger_wrapper
 def info(*args):
