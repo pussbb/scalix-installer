@@ -1,0 +1,335 @@
+SCALIX ACTIVESYNC SOFTWARE LICENSE AGREEMENT
+
+IMPORTANT: CAREFULLY READ THIS LICENSE AGREEMENT BEFORE USING
+THIS PRODUCT.
+
+CLICKING ON THE "ACCEPT" OR "YES" BUTTON IN RESPONSE TO THE
+ELECTRONIC LICENSE AGREEMENT ENQUIRY AS TO ACCEPTANCE OF THE TERMS
+OF THIS LICENSE AGREEMENT, INSTALLING OR DOWNLOADING THE SOFTWARE,
+INDICATES ACCEPTANCE OF AND AGREEMENT TO, AND LEGALLY BINDS YOU
+("CUSTOMER") AND XANDROS, INC. (ON ITS OWN BEHALF AND ON BEHALF OF
+ITS SUBSIDIARIES, SCALIX, INC,. SCALIX INTERNALTOINAL) (COLLECTIVELY
+"SCALIX") TO THE TERMS AND CONDITIONS OF THIS LICENSE AGREEMENT
+(INCLUDING ANY TERMS, CONDITIONS AND RESTRICTIONS CONTAINED IN ANY
+QUOTE ISSUED BY SCALIX RELATING TO THE SOFTWARE). IF THE CUSTOMER
+DOES NOT ACCEPT AND AGREE TO THE TERMS AND CONDITIONS OF THIS
+LICENSE AGREEMENT THEN EITHER DO NOT DOWNLOAD, INSTALL OR
+OTHERWISE USE THE SOFTWARE.
+
+
+1. Definitions
+
+The following terms shall have the following meanings when used herein:
+
+(a) "Authorized Server Software" means Scalix Server Enterprise Edition
+and Scalix Server Small Business Edition.
+
+(b) "Bankruptcy Event" means the occurrence of any one or more of the
+following events in respect of party hereto:
+
+    (i)   a receiver, liquidator or agent or similar officer is appointed
+          for its business, property, affairs or revenues and such
+          proceedings continue for 60 days; or
+
+    (ii)  it admits in writing its inability to pay its debts generally as
+          they come due, becomes insolvent, files a petition in bankruptcy
+          or is adjudicated bankrupt, or enters or commences composition,
+          restructuring, debt settlement, rearrangement, liquidation,
+          winding up or similar proceedings, makes an assignment for the
+          benefit of its creditors or another arrangement of similar import;
+          or
+
+    (iii) proceedings under bankruptcy, composition, restructuring,
+          rearrangement, liquidation (if commenced against it) or similar
+          insolvency laws are commenced and are not dismissed within 60 days;
+          or
+
+    (iv)  it ceases to carry on business in the ordinary course.
+
+(c) "Documentation" means the user manuals and other written materials which
+describes the Software, its operation and matters related to its use and
+which Scalix generally makes available to its commercial licensees for use
+with the Software, including any updated, improved or modified version(s)
+of such materials, whether provided in published written material, on
+magnetic media or communicated by electronic means.
+
+(d) "EAS Synchronization License" means a license to use the Software on
+Authorized Server Software to interoperate wirelessly with EAS capable
+devices using the Protocol to access and synchronize mailbox and other
+information stored in a Server managed by Authorized Server Software.
+
+(e) "On-Premises Use" means internal use of Software by an enterprise for
+the sole purpose of providing access to the mailboxes of the employees of
+the enterprise. up to a specified number
+
+(f) "Protocol" means Microsoft Exchange ActiveSync ("EAS") Protocol.
+
+(g) "Server" means a computer device that contains information, software,
+documentation and/or data which are accessible to other computers through
+a network or other connection.
+
+(h) "Software" means any of the installable components of Scalix's
+proprietary "Scalix ActiveSync" software.
+
+(i) "Third Party Software" means software programs included with the
+Software but which are licensed under a separate license agreement.
+
+(j) "Use" means installing all or any portion of the Software onto a
+computer or Server and/or loading data into or displaying, viewing or
+extracting output results from or otherwise operating any portion of
+the Software in accordance with the terms and conditions hereof.
+
+
+2. License
+
+(a) Subject to Customer's payment of the Fees in accordance with
+Section 5 hereof, and subject to the terms, conditions, restrictions
+and limitations set forth herein, Scalix hereby grants to the Customer
+a perpetual, non-exclusive, worldwide right and license to access and
+Use the Software and the Documentation for On Premise Use relating
+thereto as is reasonably necessary for Customer's productive Use of
+the Software.
+
+(b) Customer shall purchase an unique EAS Synchronization License
+for each unique mailbox that requires access and synchronization by
+EAS capable devices.
+
+(c) Some versions of the Software may also include Third Party Software
+that is is distributed under the terms of a license agreement that grants
+the licensed user a license to install each of the Third Party Software
+on a single computer for the user's own individual use.
+
+(d) Copying, redistribution, reverse engineering, decompiling and/or
+modification of Software or Third Party Software programs is prohibited.
+Any violation by the user of the applicable license terms shall
+immediately terminate the license to use Software or such Third Party
+Software.
+
+
+3. Restrictions
+
+(a) The Software, whether provided in source code or object code form,
+including without limitation, the specific design, structure and logic
+of individual programs, their interactions both internal and external,
+and the programming techniques employed therein are considered confidential
+and trade secrets of Scalix and/or its licensors (the "Confidential
+Information"), the unauthorized disclosure of which would cause
+irreparable harm to Scalix. The Customer shall use the same degree of
+care and means that it uses to protect its own information of a similar
+nature, and in any event, shall use reasonable efforts to prevent the
+disclosure of Confidential Information to any third parties. The
+Customer shall not use, reproduce or distribute the Confidential
+Information other than for the purposes authorized by this agreement.
+This confidentiality obligation shall continue to apply to the
+Confidential Information following the termination hereof, provided
+that the confidentiality provisions contained herein shall not apply
+to Confidential Information which (i) was known by the Customer prior
+to disclosure, as evidenced by its business records; (ii) was lawfully
+in the public domain prior to its disclosure, or becomes publicly
+available other than through a breach of the confidentiality provisions
+contained herein; (iii) was disclosed to the Customer by a third party,
+provided such third party or any other party from whom such third party
+receives such information is not in breach of any confidentiality
+obligation in respect of such information; (iv) is independently developed
+by the Customer, as evidenced by its business records; or (v) is disclosed
+when such disclosure is compelled pursuant to legal, judicial, or
+administrative proceeding, or otherwise required by law, provided that the
+Customer shall give all reasonable prior notice to Scalix to allow it to
+seek protective or other court orders.
+
+(b) The Customer shall not: (i) Use the Software and Documentation for any
+purpose other than Customer's own internal business purposes and other
+than as authorized by this agreement; (ii) except as expressly authorized
+herein, make any copies of the Software except as may be necessary for
+archival purposes only; (iii) reverse engineer, disassemble, reverse
+translate, decompile, or in any other manner decode the object code for
+the Software in order to derive the source code form, or decode any
+passwords or encrypted license or installation keys that have been
+provided to the Customer by Scalix in order to enable the execution of
+the Software on unauthorized equipment, or for any other reason do or
+attempt to do any of the foregoing; (iv) assign (by operation of law
+or otherwise) or transfer this agreement or the Customer's interest in
+or rights under this agreement, or attempt to do so or enter into any
+agreement to do so with any other party, without the prior written
+agreement of Scalix, and any such assignment or attempted assignment
+shall be null and void and shall result in the automatic termination
+of this agreement; (v) except as expressly provided herein, or unless
+expressly authorized by Scalix in writing, sublicense, distribute,
+transfer, loan, use, lease or otherwise make available the Software and
+Documentation or any part thereof to any third party; or (vi) remove
+any copyright notices, trademarks, or any other proprietary legends
+and/or logos of Scalix or its licensors appearing on the Software or
+the Documentation.
+
+
+4. Proprietary Rights
+
+(a) The Software Product is confidential and copyrighted. Title to the
+Software and all intellectual property rights therein and relating thereto
+is retained by Scalix and/or its licensors.  The Customer may not make
+copies of the Software. No right, title or interest in or to any
+trademark, service mark, logo or trade name of Scalix or its licensors is
+granted under this Agreement.
+
+(b) All title and intellectual property rights in and to the content which
+may be accessed through use of the Software is the property of the
+respective content owner and may be protected by applicable copyright or
+other intellectual property laws and treaties. This agreement grants the
+user no rights to use such content.
+
+
+5. Fees
+
+(a) Customer shall pay Scalix the fees ("Fees") set out in its then current
+price list. Past due amounts shall be subject to a monthly service charge
+of one and one-half percent (1 1/2%) per month of the unpaid balance or the
+maximum rate allowable by law. In addition to all other sums payable
+hereunder, Customer shall pay all reasonable out-of-pocket expenses incurred
+by Scalix, including fees and disbursements of counsel, in connection with
+collection and other enforcement proceedings resulting therefrom or in
+connection therewith.
+
+(b) All Fees are net of applicable taxes. Customer will pay or reimburse all
+taxes, duties and assessments, if any due, based on or measured by amounts
+payable to Scalix in any transaction between Customer and Scalix under this
+Agreement (excluding taxes based on Scalix' net income) together with any
+interest or penalties assessed thereon, or furnish Scalix with evidence
+acceptable to the taxing authority to sustain an exemption therefrom
+(collectively, "Taxes").
+
+
+6. Reports and Audit
+
+(a) Customer must use a commercially reasonable process to ensure that
+the Software is Used in accordance with the terms, conditions, limitations
+and restrictions contained herein.  Customer will, upon the request of
+Scalix, certify in writing to Scalix that the Software is being used in
+accordance with this Agreement. Customer will provide to Scalix reports
+on the usage of the Software upon the written request of Scalix. Each
+report will be delivered not later than twenty (20) business days following
+receipt of a written request therefor from Scalix.
+
+(b) Upon request, Customer will certify in writing that it is using the
+Software in accordance with the terms, conditions, limitations and
+restrictions contained in this Agreement. Scalix shall have the right,
+with reasonable notice and during normal business hours, at Scalix' sole
+expense (except as set forth herein), and in as non-disrupting a manner as
+reasonably possible, to verify Customer's compliance with its obligations
+hereunder. Scalix may use the audit report solely to enforce its rights
+hereunder and shall otherwise treat it as Confidential Information. In
+the event that the audit establishes that the Customer is in material
+breach of its obligations hereunder, the Customer shall reimburse Scalix
+for the cost of the audit and shall promptly pay all license fees owing
+to Scalix.
+
+
+7. Limited Warranty
+
+EXCEPT WHERE SPECIFICALLY STATED OTHERWISE IN THIS AGREEMENT, THE
+SOFTWARE, INCLUDING WITHOUT LIMITATION THE THIRD PARTY SOFTWARE, IS
+PROVIDED TO THE USER ON AN "AS IS" BASIS, WITHOUT ANY OTHER
+WARRANTIES OR CONDITIONS, EXPRESS OR IMPLIED, INCLUDING, BUT NOT
+LIMITED TO, WARRANTIES OF MERCHANTABLE QUALITY, SATISFACTORY
+QUALITY, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR
+THOSE ARISING BY LAW, STATUTE, USAGE OF TRADE, COURSE OF DEALING OR
+OTHERWISE. THE ENTIRE RISK AS TO THE RESULTS AND PERFORMANCE OF
+SCALIX DESKTOP OS IS ASSUMED BY THE USER.
+
+
+8. Limitation of Liability
+
+NEITHER SCALIX NOR ITS DEALERS, SUPPLIERS OR LICENSORS SHALL HAVE ANY
+LIABILITY TO THE CUSTOMER OR ANY OTHER PERSON OR ENTITY FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES
+WHATSOEVER, INCLUDING, BUT NOT LIMITED TO, LOSS OF REVENUE OR PROFIT,
+LOST OR DAMAGED DATA OR OTHER COMMERCIAL OR ECONOMIC LOSS, EVEN IF
+SCALIX HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, OR THEY
+ARE FORESEEABLE. SCALIX IS ALSO NOT RESPONSIBLE FOR CLAIMS BY A THIRD
+PARTY. THE MAXIMUM AGGREGATE LIABILITY OF SCALIX (INCLUDING ITS
+LICENSORS, DEALERS AND SUPPLIERS) TO THE CUSTOMER  SHALL NOT EXCEED
+THE AMOUNT PAID BY THE CUSTOMER FOR THE SOFTWARE. THE LIMITATIONS
+IN THIS SECTION SHALL APPLY WHETHER OR NOT THE ALLEGED BREACH OR
+DEFAULT IS A BREACH OF A FUNDAMENTAL CONDITION OR TERM OR A
+FUNDAMENTAL BREACH. SOME STATES/COUNTRIES DO NOT ALLOW THE
+EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL
+DAMAGES, SO THE ABOVE LIMITATION MAY NOT APPLY TO YOU.
+
+
+9. Term and Termination
+
+(a) Term. This Agreement is entered into as of the Effective Date and
+shall continue until terminated in accordance with the terms hereof.
+
+(b) Termination.
+
+    (i)  This Agreement may be terminated by Scalix: (i) if Customer
+         fails to pay when due all or any portion of any amounts
+         payable hereunder, and such failure is not cured within ten
+         (10) days after written notice; or (ii) immediately if
+         Customer breaches any provisions of Section 3 hereof; or
+         (iii) in the event of a material breach by Customer of
+         any other provision of this Agreement where Customer fails
+         to correct such breach within thirty (30) days of its receipt
+         of written notice thereof; or (iv) immediately upon the
+         occurrence of a Bankruptcy Event in respect of the Customer.
+
+    (ii) This Agreement may be terminated by the Customer upon sixty
+         (60) days prior written notice to the other.
+
+(c) Effect of Termination. Termination of this Agreement shall
+simultaneously terminate the licenses granted in Section 2 hereof.
+Within thirty (30) days after the termination of this Agreement,
+Customer shall: (i) furnish Scalix written notice certifying that
+the original and all copies, including partial copies, of the Software
+furnished by Scalix under this Agreement or made by Customer as
+permitted by this Agreement, have either been returned to Scalix or
+destroyed and no copies or portions thereof remain in the possession
+of Customer, its employees, contractors or agents; and (ii) make prompt
+payment in full to Scalix for all amounts then due, together with any
+applicable Taxes.
+
+(d) Survival. Sections 3, 4, 7, 8 and 10 shall survive expiration or
+termination of this Agreement.
+
+
+10. General
+
+(a) No waiver by either of the parties hereto of any breach of any
+condition, covenant or term hereof shall be effective unless it is in
+writing and it shall not constitute a waiver of such condition, covenant
+or term except in respect of the particular breach giving rise to such waiver.
+
+(b) This agreement contains the whole of the agreement between the parties
+hereto concerning the matters provided for herein and there are no collateral
+or precedent representations, warranties, agreements or conditions not
+specifically set forth in this agreement and none have been relied on by
+either party as an inducement to enter into this agreement. This
+agreement supersedes any prior proposal, representation or understanding
+between the parties hereto.
+
+(c) This agreement shall be governed by the laws of the Province of Ontario.
+The United Nations Convention on Contracts for the International Sale of
+Goods shall not apply to this agreement or the transactions contemplated
+hereunder.
+
+(d) This agreement has been prepared and drawn up in the English language.
+In the event that this agreement is translated into any other language and
+in the event of a discrepancy in the interpretation between the English text
+and the text of the other language, the English text shall govern.
+
+(e) If any provision of this agreement is declared by a court of competent
+jurisdiction to be invalid, illegal or unenforceable, such provision shall
+be severed from this agreement and the remaining provisions shall continue
+in full force and effect.
+
+(f) This agreement shall enure to the benefit of and be binding upon You
+and Scalix and your respective heir, executors, successors and permitted
+assigns.
+
+Should there be any questions concerning this agreement, or desire to
+contact Scalix for any reason, please see our contact information at
+www.scalix.com/about/contact.html.
+
+
+
+Copyright (c) 2009 Scalix, Inc. and Scalix Corporation. "Scalix" is a trademark of Scalix, Inc.

@@ -11,7 +11,8 @@ Options:
   -h --help                     Show this screen.
   --version                     Show version.
   --cli                         Console only application
-  --pkgdir=<pkgdir>             Directory with packages to install or upgrade
+  --pkgdir=<pkgdir>             Directory with packages to install or upgrade \
+  [default: ../products/]
   --logdir=<logdir>             Directory for log file [default: ../logs/]
   --instance=<instance_name>    Scalix Instance name
   --hostname=<hostname>         Set hostname
@@ -32,7 +33,7 @@ import signal
 def sigint_handler(signum, frame):
     pass
 
-#signal.signal(signal.SIGINT, sigint_handler )
+signal.signal(signal.SIGINT, sigint_handler )
 
 _dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(_dir, '3rdparty'))
@@ -127,9 +128,8 @@ def main(args, system):
     if args["--cli"] or not app:
         import sx.cli.app
         app = sx.cli.app.CliApplication
-
     try:
-        app(system).run()
+        app(system, args).run()
     except (EOFError, KeyboardInterrupt, SystemExit) as _:
         pass
 

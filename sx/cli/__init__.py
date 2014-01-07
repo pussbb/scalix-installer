@@ -14,13 +14,15 @@ PALETTE = [
     ('dialog','white','dark gray'),
     ('dialog_title','white','light gray', 'bold'),
     ('bg', 'black', 'light gray'),
-    ('bgf', 'white', 'dark red', 'standout')
+    ('bgf', 'white', 'dark red', 'standout'),
+    ('selectable','black', 'dark cyan')
     ]
 
 
 #urwid.AttrWrap(urwid.Button(('key', "  F10"), " quit", _f10_pressed),
 #                'key','key')
 FOOTER_TEXT = ('footer', [
+    ('key', " F3"), " License  ",
     ('key', "  F10"), " quit",
     ])
 
@@ -64,7 +66,7 @@ class Dialog(urwid.WidgetWrap):
 
     _blank = urwid.Text("")
 
-    def __init__(self, msg, title, buttons, width, height, body, ):
+    def __init__(self, content, title, buttons, width, height, body, ):
         """
         msg -- content of the message widget, one of:
                    plain string -- string is displayed
@@ -77,7 +79,9 @@ class Dialog(urwid.WidgetWrap):
         """
         attr =  ('dialog', 'bg', 'bgf')
         #Text widget containing the message:
-        msg_widget = urwid.Padding(urwid.Text(msg), 'center', width - 4)
+        if not isinstance(content, urwid.Widget):
+            content = urwid.Text(content)
+        msg_widget = urwid.Padding(content, 'center', width - 4)
 
         #GridFlow widget containing all the buttons:
         button_widgets = []
@@ -87,12 +91,16 @@ class Dialog(urwid.WidgetWrap):
             btn = urwid.AttrWrap(btn, attr[1], attr[2])
             button_widgets.append(btn)
 
-        button_grid = urwid.GridFlow(button_widgets, 12, 2, 1, 'center')
-
         #Combine message widget and button widget:
-        widget_list = [msg_widget, self._blank, button_grid]
+        widget_list = [msg_widget, self._blank]
+        pile_index = 1
+        if button_widgets:
+            pile_index = 2
+            widget_list.append(urwid.GridFlow(button_widgets,
+                                              12, 2, 1, 'center'))
+
         self._combined = urwid.AttrWrap(urwid.Filler(
-            urwid.Pile(widget_list, 2)), attr[0])
+            urwid.Pile(widget_list, pile_index)), attr[0])
 
         bline = urwid.Divider("─")
         vline = urwid.SolidFill("│")
@@ -169,3 +177,17 @@ class ConfirmDialog(object):
                 return True
             if self.confirm.b_pressed is 2:
                 return False
+
+
+class SxList(urwid.ListBox):
+
+    def focus_next(self):
+        try:
+            self.body.set_focus(self.body.get_next(self.body.get_focus()[1])[1])
+        except:
+            pass
+    def focus_previous(self):
+        try:
+            self.body.set_focus(self.body.get_prev(self.body.get_focus()[1])[1])
+        except:
+            pass
