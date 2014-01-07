@@ -28,9 +28,15 @@ class CliApplication(object):
 
 
     def run(self):
-        urwid.MainLoop(self.frame, PALETTE,
-                       unhandled_input=self.unhandled_keypress).run()
+        self.ui = urwid.MainLoop(self.frame, PALETTE,
+                       unhandled_input=self.unhandled_keypress,
+                       pop_ups=True)
+        self.ui.run()
 
     def unhandled_keypress(self, key):
         if key == "f10":
-            raise urwid.ExitMainLoop()
+            confirm = ConfirmDialog("Do you want to exit?", self.ui)
+            if confirm.execute():
+                raise urwid.ExitMainLoop()
+
+#raise urwid.ExitMainLoop()
