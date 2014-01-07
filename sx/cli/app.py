@@ -38,5 +38,3 @@ class CliApplication(object):
             confirm = ConfirmDialog("Do you want to exit?", self.ui)
             if confirm.execute():
                 raise urwid.ExitMainLoop()
-
-#raise urwid.ExitMainLoop()

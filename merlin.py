@@ -32,7 +32,7 @@ import signal
 def sigint_handler(signum, frame):
     pass
 
-signal.signal(signal.SIGINT, sigint_handler )
+#signal.signal(signal.SIGINT, sigint_handler )
 
 _dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(_dir, '3rdparty'))

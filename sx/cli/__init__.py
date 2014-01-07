@@ -3,7 +3,7 @@
 __author__ = 'pussbb'
 from .. import version
 import urwid
-
+from ..logger import *
 PALETTE = [
     ('body', 'white', 'light blue'),
     ('header', 'white', 'dark blue', 'bold'),
@@ -61,11 +61,8 @@ class Dialog(urwid.WidgetWrap):
     """
 
     b_pressed = None
-    edit_text = None
 
     _blank = urwid.Text("")
-    _edit_widget = None
-    _mode = None
 
     def __init__(self, msg, title, buttons, width, height, body, ):
         """
@@ -85,10 +82,9 @@ class Dialog(urwid.WidgetWrap):
         #GridFlow widget containing all the buttons:
         button_widgets = []
 
-        for button in buttons:
-            btn = urwid.Button(button, self._action)
+        for label, val in buttons:
+            btn = urwid.Button(label, self._action, val)
             btn = urwid.AttrWrap(btn, attr[1], attr[2])
-            btn = urwid.AttrWrap(btn, 'selectable','focus')
             button_widgets.append(btn)
 
         button_grid = urwid.GridFlow(button_widgets, 12, 2, 1, 'center')
@@ -132,22 +128,18 @@ class Dialog(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, overlay)
 
 
-    def _action(self, button):
+    def _action(self, button, val):
         """
         Function called when a button is pressed.
         Should not be called manually.
         """
-
-        self.b_pressed = button.get_label()
-        if self._edit_widget:
-            self.edit_text = self._edit_widget.get_edit_text()
-
+        self.b_pressed = val
 
 class ConfirmDialog(object):
 
-    def __init__(self, text, ui, buttons=None, width=50, height=7):
-        if not buttons:
-            buttons = ["Yes", "No"]
+    def __init__(self, text, ui, width=50, height=7):
+
+        buttons = [("Yes", 1), ("No", 2)]
         self.confirm = Dialog(text, 'Confirm', buttons, width, height, ui.widget)
         self.ui = ui
 
@@ -158,6 +150,7 @@ class ConfirmDialog(object):
         while True:
             if keys:
                 self.ui.screen.draw_screen(dim, self.confirm.render(dim,True))
+
             keys = self.ui.screen.get_input()
 
             if "window resize" in keys:
@@ -165,10 +158,14 @@ class ConfirmDialog(object):
             if "esc" in keys:
                 return False
 
-            for k in keys:
-                self.confirm.keypress(dim, k)
+            for event in keys:
+                if urwid.is_mouse_event(event):
+                    self.confirm.mouse_event(dim, event[0], event[1],
+                                             event[2], event[3], True)
+                else:
+                    self.confirm.keypress(dim, event)
 
-            if self.confirm.b_pressed == "Yes":
+            if self.confirm.b_pressed is 1:
                 return True
-            if self.confirm.b_pressed == "No":
+            if self.confirm.b_pressed is 2:
                 return False
