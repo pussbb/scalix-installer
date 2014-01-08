@@ -58,6 +58,10 @@ class CliApplication(object):
             list_ = open(file).readlines()
         else:
             list_ = ["No license found."]
-        Dialog(list_, 'Scalix License', self.ui, 79, 70).execute()
+        _, height = self.ui.screen_size
+
+        if height > 10:
+            height = height - 2
+        Dialog(list_, 'Scalix License', self.ui, 79, height).execute()
 
 
