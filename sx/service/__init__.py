@@ -57,7 +57,7 @@ class AbstractServiceManager(object):
         try:
             cmd = ['chkconfig', '--level', '345', str(service), 'on']
             utils.execute(cmd)
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommandFailed as _:
             return False
         return True
 
@@ -67,7 +67,7 @@ class AbstractServiceManager(object):
             raise NotImplementedError()
         try:
             utils.execute('chkconfig', '--del', str(service))
-        except ScalixExternalCommandFailed as exception:
+        except ScalixExternalCommandFailed as _:
             return False
         return True
 
@@ -104,8 +104,8 @@ class AbstractService(object):
         if AbstractServiceManager.CHCONF_AVAILABLE:
             try:
                 lines = utils.execute('chkconfig', '--list', self.name)
-                levels = re.findall('(\d)\:on', lines[0])
-            except ScalixExternalCommandFailed as exception:
+                levels = re.findall(r'(\d)\:on', lines[0])
+            except ScalixExternalCommandFailed as _:
                 # got message service * supports chkconfig,
                 # but is not referenced in any runlevel
                 # (run 'chkconfig --add httpd')

@@ -111,7 +111,8 @@ def init_logger(args):
 def main(args, system):
 
     if not args['--no-root'] and os.geteuid() != 0:
-        raise ScalixException('Error: You need to be root or superuser to run this application')
+        raise ScalixException('Error: You need to be root or superuser '
+                              'to run this application')
 
     if 'DISPLAY' not in os.environ:
         args["--cli"] = True

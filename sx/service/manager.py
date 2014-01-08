@@ -29,7 +29,7 @@ class DebServiceManager(AbstractServiceManager):
     def enable(self, service):
         try:
             utils.execute('update-rc.d', str(service), 'defaults')
-        except ScalixExternalCommandException as exception:
+        except ScalixExternalCommandException as _:
             return False
         return True
 
@@ -37,7 +37,7 @@ class DebServiceManager(AbstractServiceManager):
     def disable(self, service):
         try:
             utils.execute('update-rc.d', '-f', str(service), 'remove')
-        except ScalixExternalCommandException as exception:
+        except ScalixExternalCommandException as _:
             return False
         return True
 
