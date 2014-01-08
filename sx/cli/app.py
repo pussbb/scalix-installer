@@ -45,43 +45,15 @@ class CliApplication(object):
             self.show_license()
 
     def show_license(self):
-        l = []
+
+        list = []
         file = utils.absolute_file_path('license')
         if not os.path.exists(file):
             file = utils.absolute_file_path('license.activesync')
         if os.path.exists(file):
-            for line in open(file).readlines():
-                l.append(urwid.Text( line.rstrip()))
+            list = open(file).readlines()
         else:
-            l.append(urwid.Text("No license found."))
-
-        list = SxList(urwid.SimpleListWalker(l))
-        body = urwid.AttrWrap(urwid.BoxAdapter(list, 68),
-                              'selectable','focustext')
-        dialog = Dialog(body, 'Scalix License', [], 79, 70, self.ui.widget)
-
-        dim = self.ui.screen.get_cols_rows()
-        keys = True
-        #Event loop:
-        while True:
-            if keys:
-                self.ui.screen.draw_screen(dim, dialog.render(dim,True))
-            keys = self.ui.screen.get_input()
-            if not keys:
-                continue
-            if "esc" in keys:
-                break
-            for event in keys:
-                if urwid.is_mouse_event(event):
-                    if event[1] is 4:
-                        list.focus_previous()
-                    if event[1] is 5:
-                        list.focus_next()
-                    continue
-
-                if event in ('down','page down'):
-                    list.focus_next()
-                if event in ('up','page up'):
-                    list.focus_previous()
+            list = ["No license found."]
+        Dialog(list, 'Scalix License', self.ui, 79, 70).execute()
 
 

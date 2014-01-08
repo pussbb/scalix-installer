@@ -50,6 +50,23 @@ class WizardPage(object):
     def text_padd(self, text):
         return urwid.Padding(urwid.Text(text), left=10, right=10, min_width=60)
 
+class SxList(urwid.ListBox):
+
+    def focus_next(self):
+        try:
+            self.body.set_focus(self.body.get_next(self.body.get_focus()[1])[1])
+        except:
+            pass
+
+    def focus_previous(self):
+        try:
+            self.body.set_focus(self.body.get_prev(self.body.get_focus()[1])[1])
+        except:
+            pass
+
+class DialogExit(Exception):
+    pass
+
 class Dialog(urwid.WidgetWrap):
     """
     Creates a BoxWidget that displays a message
@@ -66,7 +83,8 @@ class Dialog(urwid.WidgetWrap):
 
     _blank = urwid.Text("")
 
-    def __init__(self, content, title, buttons, width, height, body, ):
+    def __init__(self, content, title, ui, width=78, height=10, buttons=None,
+                 background=None):
         """
         msg -- content of the message widget, one of:
                    plain string -- string is displayed
@@ -77,19 +95,25 @@ class Dialog(urwid.WidgetWrap):
         height -- height of the message widget
         body -- widget displayed beneath the message widget
         """
-        attr =  ('dialog', 'bg', 'bgf')
+        if background is None:
+            background =  ('dialog', 'bg', 'bgf')
         #Text widget containing the message:
         if not isinstance(content, urwid.Widget):
-            content = urwid.Text(content)
+            if isinstance(content, list):
+                content = self._list_to_widget(content, height)
+            else:
+                content = urwid.Text(content)
+        self.ui = ui
+        self.content = content
         msg_widget = urwid.Padding(content, 'center', width - 4)
 
         #GridFlow widget containing all the buttons:
         button_widgets = []
-
-        for label, val in buttons:
-            btn = urwid.Button(label, self._action, val)
-            btn = urwid.AttrWrap(btn, attr[1], attr[2])
-            button_widgets.append(btn)
+        if buttons:
+            for label, val in buttons:
+                btn = urwid.Button(label, self._action, val)
+                btn = urwid.AttrWrap(btn, background[1], background[2])
+                button_widgets.append(btn)
 
         #Combine message widget and button widget:
         widget_list = [msg_widget, self._blank]
@@ -100,7 +124,7 @@ class Dialog(urwid.WidgetWrap):
                                               12, 2, 1, 'center'))
 
         self._combined = urwid.AttrWrap(urwid.Filler(
-            urwid.Pile(widget_list, pile_index)), attr[0])
+            urwid.Pile(widget_list, pile_index)), background[0])
 
         bline = urwid.Divider("─")
         vline = urwid.SolidFill("│")
@@ -131,10 +155,19 @@ class Dialog(urwid.WidgetWrap):
                                 ('flow', bottom)], focus_item=1)
 
         #Place the dialog widget on top of body:
-        overlay = urwid.Overlay(pile, body, 'center', width,
+        overlay = urwid.Overlay(pile, self.ui.widget, 'center', width,
                                 'middle', height)
         urwid.WidgetWrap.__init__(self, overlay)
 
+
+    def _list_to_widget(self, list, height):
+        parsed_list = []
+        for line in list:
+            if not isinstance(line, urwid.Widget):
+                parsed_list.append(urwid.Text(line.rstrip()))
+        list = SxList(urwid.SimpleListWalker(parsed_list))
+        return urwid.AttrWrap(urwid.BoxAdapter(list, height-2), 'selectable',
+                              'focustext')
 
     def _action(self, button, val):
         """
@@ -143,51 +176,64 @@ class Dialog(urwid.WidgetWrap):
         """
         self.b_pressed = val
 
-class ConfirmDialog(object):
-
-    def __init__(self, text, ui, width=50, height=7):
-
-        buttons = [("Yes", 1), ("No", 2)]
-        self.confirm = Dialog(text, 'Confirm', buttons, width, height, ui.widget)
-        self.ui = ui
-
     def execute(self):
         keys = True
         dim = self.ui.screen.get_cols_rows()
-        #Event loop:
         while True:
             if keys:
-                self.ui.screen.draw_screen(dim, self.confirm.render(dim,True))
+                self.ui.screen.draw_screen(dim, self.render(dim,True))
 
             keys = self.ui.screen.get_input()
-
+            if not keys:
+                continue
             if "window resize" in keys:
                 dim = self.ui.screen.get_cols_rows()
             if "esc" in keys:
-                return False
+                break
 
             for event in keys:
-                if urwid.is_mouse_event(event):
-                    self.confirm.mouse_event(dim, event[0], event[1],
-                                             event[2], event[3], True)
+                if hasattr(self.content, 'focus_next'):
+                    self._scroll_listbox(event, dim)
                 else:
-                    self.confirm.keypress(dim, event)
+                    self._button_events_process(event, dim)
+            try:
+                self._process_button_values()
+            except DialogExit, exception:
+                return exception.args[0]
 
-            if self.confirm.b_pressed is 1:
-                return True
-            if self.confirm.b_pressed is 2:
-                return False
+    def _button_events_process(self, event, dim):
+        if urwid.is_mouse_event(event):
+            self.mouse_event(dim, event[0], event[1],
+                                     event[2], event[3], True)
+        else:
+            self.keypress(dim, event)
 
+    def _scroll_listbox(self, event, dim):
 
-class SxList(urwid.ListBox):
+        if urwid.is_mouse_event(event):
+            if event[1] is 4:
+                self.content.focus_previous()
+            if event[1] is 5:
+                self.content.focus_next()
+            return
 
-    def focus_next(self):
-        try:
-            self.body.set_focus(self.body.get_next(self.body.get_focus()[1])[1])
-        except:
-            pass
-    def focus_previous(self):
-        try:
-            self.body.set_focus(self.body.get_prev(self.body.get_focus()[1])[1])
-        except:
-            pass
+        if event in ('down','page down'):
+            self.content.focus_next()
+        if event in ('up','page up'):
+            self.content.focus_previous()
+
+    def _process_button_values(self):
+        pass
+
+class ConfirmDialog(Dialog):
+
+    def __init__(self, text, ui, width=50, height=7):
+
+        buttons = [("Yes", True), ("No", False)]
+        super(ConfirmDialog, self).__init__(text, 'Confirm', ui,
+                                            width, height, buttons)
+
+    def _process_button_values(self):
+        if self.b_pressed is None:
+            return
+        raise DialogExit(self.b_pressed)
