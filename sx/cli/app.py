@@ -40,6 +40,8 @@ class CliApplication(object):
                 raise urwid.ExitMainLoop()
         if key == "f3":
             self.show_license()
+        if key == "f9":
+            ErrorDialog('Opps some error occurred', self.ui).execute()
         is_mouse = urwid.is_mouse_event(key)
         if key in ('up','page up') or (is_mouse and key[1] == 4):
             self.frame.set_focus('body')

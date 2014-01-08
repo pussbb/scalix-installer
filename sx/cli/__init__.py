@@ -10,12 +10,15 @@ PALETTE = [
     ('footer', 'dark cyan', 'dark blue', 'bold'),
     ('key','light cyan', 'dark blue', 'underline'),
     ('bright', 'white', 'light blue', ('bold','standout')),
-    ('border','white','light gray'),
     ('dialog','white','dark gray'),
+    ('dialog_border','white','light gray'),
     ('dialog_title','white','light gray', 'bold'),
-    ('bg', 'black', 'light gray'),
+    ('dialog_error','white','dark red'),
+    ('dialog_border_error','white','light red'),
+    ('dialog_error_title','white','light red', 'bold'),
+    ('bg', 'black', 'light gray', 'bold'),
     ('bgf', 'white', 'dark red', 'standout'),
-    ('selectable','black', 'dark cyan')
+    ('selectable','black', 'dark cyan'),
     ]
 
 
@@ -67,6 +70,12 @@ class SxList(urwid.ListBox):
         except:
             pass
 
+class SxButton(urwid.Button):
+
+    def set_label(self, label):
+        super(SxButton, self).set_label(label)
+        self._label.set_align_mode('center')
+
 class DialogExit(Exception):
     pass
 
@@ -84,10 +93,12 @@ class Dialog(urwid.WidgetWrap):
 
     b_pressed = None
 
-    _blank = urwid.Text("")
+    _blank = urwid.Divider(" ")
+
+    close_on_click = False
 
     def __init__(self, content, title, ui, width=78, height=10, buttons=None,
-                 background=None):
+                 pallete=None):
         """
         msg -- content of the message widget, one of:
                    plain string -- string is displayed
@@ -98,8 +109,8 @@ class Dialog(urwid.WidgetWrap):
         height -- height of the message widget
         body -- widget displayed beneath the message widget
         """
-        if background is None:
-            background =  ('dialog', 'bg', 'bgf')
+        if pallete is None:
+            pallete = ('dialog', 'dialog_title', 'dialog_border','bg', 'bgf')
         #Text widget containing the message:
         if not isinstance(content, urwid.Widget):
             if isinstance(content, list):
@@ -114,20 +125,21 @@ class Dialog(urwid.WidgetWrap):
         button_widgets = []
         if buttons:
             for label, val in buttons:
-                btn = urwid.Button(label, self._action, val)
-                btn = urwid.AttrWrap(btn, background[1], background[2])
+                btn = SxButton(label, self._action, val)
+                btn = urwid.AttrWrap(btn, pallete[-2], pallete[-1])
                 button_widgets.append(btn)
 
         #Combine message widget and button widget:
-        widget_list = [msg_widget, self._blank]
-        pile_index = 1
+        widget_list = [msg_widget]
+        pile_index = 0
         if button_widgets:
             pile_index = 2
+            widget_list.append(self._blank)
             widget_list.append(urwid.GridFlow(button_widgets,
                                               12, 2, 1, 'center'))
 
         self._combined = urwid.AttrWrap(urwid.Filler(
-            urwid.Pile(widget_list, pile_index)), background[0])
+            urwid.Pile(widget_list, pile_index)), pallete[0])
 
         bline = urwid.Divider("─")
         vline = urwid.SolidFill("│")
@@ -140,19 +152,19 @@ class Dialog(urwid.WidgetWrap):
 
         tline_widgets = [('fixed', 1, tlcorner),
                          tline,
-                         urwid.Text(('dialog_title', title), align="center")]
+                         urwid.Text((pallete[1], title), align="center")]
 
         tline_widgets.extend([tline, ("fixed", 1, trcorner)])
 
-        top = urwid.AttrWrap(urwid.Columns(tline_widgets), 'border')
+        top = urwid.AttrWrap(urwid.Columns(tline_widgets), pallete[2])
 
         middle = urwid.Columns([('fixed', 1, vline),
                                         self._combined, ('fixed', 1, vline)],
                                         box_columns=[0,2], focus_column=1)
-        middle = urwid.AttrWrap(middle, 'border')
+        middle = urwid.AttrWrap(middle, pallete[2])
         bottom = urwid.Columns([('fixed', 1, blcorner),
                                         bline, ('fixed', 1, brcorner)])
-        bottom = urwid.AttrWrap(bottom, 'border')
+        bottom = urwid.AttrWrap(bottom, pallete[2])
 
         pile = urwid.Pile([('flow',top), middle,
                                 ('flow', bottom)], focus_item=1)
@@ -171,8 +183,7 @@ class Dialog(urwid.WidgetWrap):
             else:
                 parsed_list.append(line)
         list = SxList(urwid.SimpleListWalker(parsed_list))
-        return urwid.AttrWrap(urwid.BoxAdapter(list, height-2), 'selectable',
-                              'focustext')
+        return urwid.AttrWrap(urwid.BoxAdapter(list, height-2), 'selectable')
 
     def _action(self, button, val):
         """
@@ -201,6 +212,11 @@ class Dialog(urwid.WidgetWrap):
                     self._scroll_listbox(event, dim)
                 else:
                     self._button_events_process(event, dim)
+
+                if self.close_on_click and \
+                        (urwid.is_mouse_event(event) and event[1] == 1):
+                    return
+
             try:
                 self._process_button_values()
             except DialogExit, exception:
@@ -208,7 +224,7 @@ class Dialog(urwid.WidgetWrap):
 
     def _button_events_process(self, event, dim):
         if urwid.is_mouse_event(event):
-            self.mouse_event(dim, event[0], event[1],
+            result = self.mouse_event(dim, event[0], event[1],
                                      event[2], event[3], True)
         else:
             self.keypress(dim, event)
@@ -242,3 +258,14 @@ class ConfirmDialog(Dialog):
         if self.b_pressed is None:
             return
         raise DialogExit(self.b_pressed)
+
+
+class ErrorDialog(Dialog):
+
+    def __init__(self, text, ui, width=50, height=7):
+        pallete = ('dialog_error', 'dialog_error_title',
+                   'dialog_border_error','bg', 'bgf')
+
+        super(ErrorDialog, self).__init__(text, 'Error', ui,
+                                            width, height, pallete=pallete)
+        self.close_on_click = True
