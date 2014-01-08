@@ -3,7 +3,7 @@
 __author__ = 'pussbb'
 from .. import version
 import urwid
-from ..logger import *
+
 PALETTE = [
     ('body', 'white', 'light blue'),
     ('header', 'white', 'dark blue', 'bold'),
@@ -48,7 +48,10 @@ class WizardPage(object):
         pass
 
     def text_padd(self, text):
-        return urwid.Padding(urwid.Text(text), left=10, right=10, min_width=60)
+        return self.with_padding(urwid.Text(text))
+
+    def with_padding(self, content ,left=10, right=10, min_width=60):
+        return urwid.Padding(content, left=10, right=10, min_width=60)
 
 class SxList(urwid.ListBox):
 
@@ -165,6 +168,8 @@ class Dialog(urwid.WidgetWrap):
         for line in list:
             if not isinstance(line, urwid.Widget):
                 parsed_list.append(urwid.Text(line.rstrip()))
+            else:
+                parsed_list.append(line)
         list = SxList(urwid.SimpleListWalker(parsed_list))
         return urwid.AttrWrap(urwid.BoxAdapter(list, height-2), 'selectable',
                               'focustext')

@@ -3,9 +3,6 @@
 
 __author__ = 'pussbb'
 
-
-import urwid
-
 from . import *
 from .. import utils
 from . import general
@@ -41,19 +38,24 @@ class CliApplication(object):
             confirm = ConfirmDialog("Do you want to exit?", self.ui)
             if confirm.execute():
                 raise urwid.ExitMainLoop()
-        elif key == "f3":
+        if key == "f3":
             self.show_license()
+        is_mouse = urwid.is_mouse_event(key)
+        if key in ('up','page up') or (is_mouse and key[1] == 4):
+            self.frame.set_focus('body')
+        if key in ('down','page down') or (is_mouse and key[1] == 5):
+            self.frame.set_focus('footer')
 
     def show_license(self):
 
-        list = []
+        list_ = []
         file = utils.absolute_file_path('license')
         if not os.path.exists(file):
             file = utils.absolute_file_path('license.activesync')
         if os.path.exists(file):
-            list = open(file).readlines()
+            list_ = open(file).readlines()
         else:
-            list = ["No license found."]
-        Dialog(list, 'Scalix License', self.ui, 79, 70).execute()
+            list_ = ["No license found."]
+        Dialog(list_, 'Scalix License', self.ui, 79, 70).execute()
 
 
